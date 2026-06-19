@@ -325,6 +325,19 @@ class SegmentedControl extends StatelessWidget {
               onTap: () => onTabChanged(1),
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: selectedIndex == 1 ? Colors.white : Colors.transparent,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: selectedIndex == 1
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
                 alignment: Alignment.center,
                 child: Text(
                   "Lounge",

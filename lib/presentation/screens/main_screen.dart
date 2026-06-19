@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
@@ -106,18 +107,35 @@ class _MainScreenState extends State<MainScreen> {
       appBar: AppBar(
         leading: Padding(
           padding: const EdgeInsets.only(left: 16.0),
-          child: GestureDetector(
-            onTap: _showProfile,
-            child: const CircleAvatar(
-              backgroundColor: AppColors.surfaceDim,
-              child: Icon(Icons.person, color: AppColors.onSurface),
-            ),
+          child: Consumer<DashboardProvider>(
+            builder: (context, dp, _) {
+              final url = dp.currentUser?.imageUrl;
+              return GestureDetector(
+                onTap: _showProfile,
+                child: CircleAvatar(
+                  backgroundColor: AppColors.surfaceDim,
+                  backgroundImage: url != null && url.isNotEmpty
+                      ? (url.startsWith('/') || url.startsWith('file://')
+                          ? FileImage(File(url))
+                          : NetworkImage(url))
+                      : null,
+                  child: url == null || url.isEmpty
+                      ? const Icon(Icons.person, color: AppColors.onSurface)
+                      : null,
+                ),
+              );
+            },
           ),
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Civic Hearth', style: AppTypography.headlineMd),
+            Consumer<DashboardProvider>(
+              builder: (context, dp, _) => Text(
+                dp.currentUser?.name ?? 'Civic Hearth',
+                style: AppTypography.headlineMd,
+              ),
+            ),
             if (group != null)
               Text(group.name, style: AppTypography.bodySm.copyWith(color: AppColors.primary, fontWeight: FontWeight.w600)),
           ],

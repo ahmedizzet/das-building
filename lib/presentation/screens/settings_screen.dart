@@ -1,7 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../../domain/entities/member.dart';
 import '../providers/dashboard_provider.dart';
 import '../providers/sync_provider.dart';
 import 'login_screen.dart';
@@ -178,7 +181,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           CircleAvatar(
             radius: 32,
             backgroundColor: AppColors.surfaceContainer,
-            backgroundImage: user?.imageUrl != null ? NetworkImage(user.imageUrl) : null,
+            backgroundImage: user?.imageUrl != null
+                ? (user.imageUrl.startsWith('/') || user.imageUrl.startsWith('file://')
+                    ? FileImage(File(user.imageUrl))
+                    : NetworkImage(user.imageUrl))
+                : null,
             child: user?.imageUrl == null
                 ? const Icon(Icons.person, size: 32, color: AppColors.outline)
                 : null,
@@ -200,14 +207,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () => _showEditProfileSheet(context, user),
             icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
           ),
         ],
       ),
     );
   }
-
   Widget _buildSectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8),
@@ -320,6 +326,187 @@ class _SettingsScreenState extends State<SettingsScreen> {
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         );
       },
+    );
+  }
+
+  void _showEditProfileSheet(BuildContext context, dynamic user) {
+    final nameController = TextEditingController(text: user?.name ?? '');
+    String? imageUrl = user?.imageUrl;
+    File? pickedImage;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) => Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom,
+            left: 20,
+            right: 20,
+            top: 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Edit Profile", style: AppTypography.headlineMd),
+              const SizedBox(height: 20),
+              Center(
+                child: GestureDetector(
+                  onTap: () async {
+                    final urlController = TextEditingController();
+                    final choice = await showDialog<String>(
+                      context: ctx,
+                      builder: (dialogCtx) => AlertDialog(
+                        title: const Text("Change Photo"),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ListTile(
+                              leading: const Icon(Icons.photo_library),
+                              title: const Text("Gallery"),
+                              onTap: () => Navigator.pop(dialogCtx, 'gallery'),
+                            ),
+                            ListTile(
+                              leading: const Icon(Icons.camera_alt),
+                              title: const Text("Camera"),
+                              onTap: () => Navigator.pop(dialogCtx, 'camera'),
+                            ),
+                            const Divider(),
+                            TextField(
+                              controller: urlController,
+                              decoration: const InputDecoration(
+                                labelText: 'Enter image URL',
+                                hintText: 'https://example.com/photo.jpg',
+                                prefixIcon: Icon(Icons.link),
+                              ),
+                            ),
+                          ],
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(dialogCtx),
+                            child: const Text("Cancel"),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              final url = urlController.text.trim();
+                              if (url.isNotEmpty) {
+                                Navigator.pop(dialogCtx, 'url:$url');
+                              }
+                            },
+                            child: const Text("Use URL"),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (choice == null) return;
+                    if (choice == 'gallery' || choice == 'camera') {
+                      final source = choice == 'gallery'
+                          ? ImageSource.gallery
+                          : ImageSource.camera;
+                      final picker = ImagePicker();
+                      final picked = await picker.pickImage(source: source, imageQuality: 80);
+                      if (picked != null) {
+                        setSheetState(() {
+                          pickedImage = File(picked.path);
+                          imageUrl = null;
+                        });
+                      }
+                    } else if (choice.startsWith('url:')) {
+                      final url = choice.substring(4);
+                      setSheetState(() {
+                        imageUrl = url;
+                        pickedImage = null;
+                      });
+                    }
+                  },
+                  child: Stack(
+                    children: [
+                      CircleAvatar(
+                        radius: 48,
+                        backgroundColor: AppColors.surfaceContainer,
+                        backgroundImage: pickedImage != null
+                            ? FileImage(pickedImage!)
+                            : (imageUrl != null ? NetworkImage(imageUrl!) : null),
+                        child: pickedImage == null && imageUrl == null
+                            ? const Icon(Icons.person, size: 48, color: AppColors.outline)
+                            : null,
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.camera_alt, size: 18, color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Display Name',
+                  hintText: 'Enter your name',
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    final name = nameController.text.trim();
+                    if (name.isEmpty || user == null) return;
+
+                    String? finalImageUrl = imageUrl;
+                    if (pickedImage != null) {
+                      // In a real app, upload to a server and get URL back.
+                      // For now, keep the picked image reference locally.
+                      finalImageUrl = pickedImage!.path;
+                    }
+
+                    final updated = Member(
+                      id: user.id,
+                      name: name,
+                      unit: user.unit,
+                      balance: user.balance,
+                      status: user.status,
+                      role: user.role,
+                      imageUrl: finalImageUrl ?? '',
+                      phoneNumber: user.phoneNumber,
+                      groupId: user.groupId,
+                    );
+                    if (!ctx.mounted) return;
+                    await context.read<DashboardProvider>().updateMember(updated);
+                    if (!ctx.mounted) return;
+                    Navigator.pop(ctx);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text("Save"),
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

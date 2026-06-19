@@ -67,6 +67,10 @@ class PersonalProvider with ChangeNotifier {
     return _allPayments.where((p) => p.date.month == targetMonth).toList();
   }
 
+  List<Payment> paymentsForMember(String memberId) {
+    return _allPayments.where((p) => p.memberId == memberId).toList();
+  }
+
   void setSelectedExpenseMonth(String month) {
     _selectedExpenseMonth = month;
     notifyListeners();
