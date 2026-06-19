@@ -30,7 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               const SizedBox(height: 60),
               Text(
-                "Welcome to\nCivic Hearth",
+                "Welcome to\nDAS Management",
                 style: AppTypography.headlineLg,
               ),
               const SizedBox(height: 12),

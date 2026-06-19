@@ -132,7 +132,7 @@ class _MainScreenState extends State<MainScreen> {
           children: [
             Consumer<DashboardProvider>(
               builder: (context, dp, _) => Text(
-                dp.currentUser?.name ?? 'Civic Hearth',
+                dp.currentUser?.name ?? 'DAS User',
                 style: AppTypography.headlineMd,
               ),
             ),

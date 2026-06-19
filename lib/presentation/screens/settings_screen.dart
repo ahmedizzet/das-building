@@ -515,7 +515,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Log Out"),
-        content: const Text("Are you sure you want to log out of Civic Hearth?"),
+        content: const Text("Are you sure you want to log out of DAS Management?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

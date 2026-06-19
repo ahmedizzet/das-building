@@ -60,7 +60,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _shareInviteLink(String code) {
-    Share.share("Join our building group on Civic Hearth! Use this code to join: $code");
+    Share.share("Join our building group on DAS Management! Use this code to join: $code");
   }
 
   @override

@@ -219,7 +219,7 @@ class _GroupLandingScreenState extends State<GroupLandingScreen> {
               const Icon(Icons.home_work_outlined, size: 80, color: AppColors.primary),
               const SizedBox(height: 24),
               Text(
-                "Welcome to Civic Hearth",
+                "Welcome to DAS Management",
                 style: AppTypography.headlineLg,
                 textAlign: TextAlign.center,
               ),
