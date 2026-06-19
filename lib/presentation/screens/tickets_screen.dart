@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/ticket.dart';
@@ -134,7 +135,7 @@ class TicketCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(ticket.title, style: AppTypography.bodyLg.copyWith(fontWeight: FontWeight.w600)),
-                          Text("${ticket.date} • ${ticket.category}", style: AppTypography.bodySm),
+                          Text("${_formatDate(ticket.date)} • ${ticket.category}", style: AppTypography.bodySm),
                           const SizedBox(height: 8),
                           StatusChip(status: ticket.status),
                         ],
@@ -172,6 +173,19 @@ class TicketCard extends StatelessWidget {
         return Icons.ac_unit_rounded;
       default:
         return Icons.confirmation_number_outlined;
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inMinutes < 60) {
+      return '${difference.inMinutes} mins ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours} hours ago';
+    } else {
+      return DateFormat('MMM dd').format(date);
     }
   }
 }

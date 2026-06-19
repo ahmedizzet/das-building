@@ -5,7 +5,7 @@ class Ticket {
   final String title;
   final String description;
   final TicketStatus status;
-  final String date;
+  final DateTime date;
   final String category;
 
   Ticket({

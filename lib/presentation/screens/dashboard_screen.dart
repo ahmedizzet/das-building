@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../providers/dashboard_provider.dart';
@@ -141,11 +142,16 @@ class RecentExpensesSection extends StatelessWidget {
                   child: Icon(_getIconForCategory(expense.category), size: 20, color: AppColors.primary),
                 ),
                 title: Text(expense.title, style: AppTypography.bodyLg.copyWith(fontWeight: FontWeight.w600)),
-                subtitle: Text("${expense.date} • ${expense.category}", style: AppTypography.bodySm),
+                subtitle: Text("${DateFormat('MMM dd').format(expense.date)} • ${expense.category}", style: AppTypography.bodySm),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(expense.amount, style: AppTypography.bodyLg),
+                    Text(
+                      NumberFormat.currency(symbol: '\$').format(expense.amount),
+                      style: AppTypography.bodyLg.copyWith(
+                        color: expense.amount < 0 ? AppColors.onSurface : AppColors.secondary,
+                      ),
+                    ),
                     const Icon(Icons.chevron_right),
                   ],
                 ),

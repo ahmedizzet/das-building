@@ -7,6 +7,7 @@ class Member {
   final double balance;
   final PaymentStatus status;
   final String imageUrl;
+  final String phoneNumber;
 
   Member({
     required this.id,
@@ -15,5 +16,6 @@ class Member {
     required this.balance,
     required this.status,
     required this.imageUrl,
+    required this.phoneNumber,
   });
 }

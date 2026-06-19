@@ -1,15 +1,15 @@
-class Expense {
+class Event {
   final String id;
   final String title;
-  final DateTime date;
   final String category;
-  final double amount;
+  final String time;
+  final String imageUrl;
 
-  Expense({
+  Event({
     required this.id,
     required this.title,
-    required this.date,
     required this.category,
-    required this.amount,
+    required this.time,
+    required this.imageUrl,
   });
 }

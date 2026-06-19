@@ -8,7 +8,7 @@ class TicketProvider with ChangeNotifier {
       title: 'Leaking Pipe in Kitchen',
       description: 'Water is leaking from under the sink.',
       status: TicketStatus.inProgress,
-      date: '2 hours ago',
+      date: DateTime.now().subtract(const Duration(hours: 2)),
       category: 'Plumbing',
     ),
     Ticket(
@@ -16,7 +16,7 @@ class TicketProvider with ChangeNotifier {
       title: 'Broken Light in Hallway',
       description: 'The light on the 3rd floor is flickering.',
       status: TicketStatus.resolved,
-      date: '1 day ago',
+      date: DateTime.now().subtract(const Duration(days: 1)),
       category: 'Electrical',
     ),
     Ticket(
@@ -24,7 +24,7 @@ class TicketProvider with ChangeNotifier {
       title: 'AC Not Cooling',
       description: 'The AC in the living room is not cooling properly.',
       status: TicketStatus.pending,
-      date: '3 days ago',
+      date: DateTime.now().subtract(const Duration(days: 3)),
       category: 'HVAC',
     ),
   ];

@@ -3,12 +3,12 @@ import '../../domain/entities/expense.dart';
 
 class DashboardProvider with ChangeNotifier {
   final List<Expense> _expenses = [
-    Expense(id: '1', title: 'Elevator Repair', date: 'Oct 12', category: 'Maintenance', amount: '-1,200.00'),
-    Expense(id: '2', title: 'Garden Landscaping', date: 'Oct 10', category: 'Lifestyle', amount: '-450.00'),
-    Expense(id: '3', title: 'Security Staff Salary', date: 'Oct 05', category: 'Operations', amount: '-5,000.00'),
-    Expense(id: '4', title: 'Water Bill', date: 'Oct 01', category: 'Utilities', amount: '-800.00'),
-    Expense(id: '5', title: 'Window Cleaning', date: 'Sep 28', category: 'Maintenance', amount: '-300.00'),
-    Expense(id: '6', title: 'Pool Chemical Service', date: 'Sep 15', category: 'Maintenance', amount: '-150.00'),
+    Expense(id: '1', title: 'Elevator Repair', date: DateTime(2023, 10, 12), category: 'Maintenance', amount: -1200.00),
+    Expense(id: '2', title: 'Garden Landscaping', date: DateTime(2023, 10, 10), category: 'Lifestyle', amount: -450.00),
+    Expense(id: '3', title: 'Security Staff Salary', date: DateTime(2023, 10, 05), category: 'Operations', amount: -5000.00),
+    Expense(id: '4', title: 'Water Bill', date: DateTime(2023, 10, 01), category: 'Utilities', amount: -800.00),
+    Expense(id: '5', title: 'Window Cleaning', date: DateTime(2023, 9, 28), category: 'Maintenance', amount: -300.00),
+    Expense(id: '6', title: 'Pool Chemical Service', date: DateTime(2023, 9, 15), category: 'Maintenance', amount: -150.00),
   ];
 
   String _selectedExpenseMonth = 'Oct';
@@ -18,7 +18,9 @@ class DashboardProvider with ChangeNotifier {
   String get selectedExpenseMonth => _selectedExpenseMonth;
 
   List<Expense> get expenses {
-    return _expenses.where((e) => e.date.contains(_selectedExpenseMonth)).toList();
+    final Map<String, int> monthMap = {'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11};
+    final targetMonth = monthMap[_selectedExpenseMonth];
+    return _expenses.where((e) => e.date.month == targetMonth).toList();
   }
 
   void setSelectedExpenseMonth(String month) {
