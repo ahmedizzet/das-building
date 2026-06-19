@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-import '../providers/member_provider.dart';
+import '../providers/dashboard_provider.dart';
+import '../providers/sync_provider.dart';
 import 'login_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -18,7 +19,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final memberProvider = context.watch<MemberProvider>();
+    final memberProvider = context.watch<DashboardProvider>();
     final user = memberProvider.currentUser;
 
     return Scaffold(
@@ -32,6 +33,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildProfileSection(user),
+            const SizedBox(height: 24),
+            _buildSectionHeader("Sync & Cloud"),
+            _buildSettingsCard([
+              _buildSyncStatusTile(),
+              _buildSettingItem(
+                icon: Icons.sync,
+                title: "Auto Sync",
+                subtitle: "Sync every 5 minutes when online",
+                trailing: Consumer<SyncProvider>(
+                  builder: (context, sp, _) => Switch.adaptive(
+                    value: sp.enabled,
+                    activeColor: AppColors.secondary,
+                    onChanged: (val) => sp.toggleSync(val),
+                  ),
+                ),
+              ),
+              _buildSettingItem(
+                icon: Icons.sync_outlined,
+                title: "Sync Now",
+                subtitle: "Push local changes & pull server updates",
+                trailing: Consumer<SyncProvider>(
+                  builder: (context, sp, _) => sp.isSyncing
+                      ? const SizedBox(
+                          width: 24, height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.chevron_right_rounded, color: AppColors.outline),
+                ),
+                onTap: () => context.read<SyncProvider>().syncNow(),
+              ),
+            ]),
             const SizedBox(height: 24),
             _buildSectionHeader("Account & Preferences"),
             _buildSettingsCard([
@@ -241,6 +272,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
       trailing: trailing ?? (onTap != null ? const Icon(Icons.chevron_right_rounded, color: AppColors.outline) : null),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    );
+  }
+
+  Widget _buildSyncStatusTile() {
+    return Consumer<SyncProvider>(
+      builder: (context, sp, _) {
+        final isConnected = sp.serverReachable;
+        final lastSync = sp.lastSyncAt;
+        String subtitle;
+        IconData icon;
+        Color iconColor;
+        if (sp.isSyncing) {
+          subtitle = 'Syncing...';
+          icon = Icons.sync;
+          iconColor = AppColors.secondary;
+        } else if (!sp.enabled) {
+          subtitle = 'Sync is disabled';
+          icon = Icons.sync_disabled;
+          iconColor = AppColors.onSurfaceVariant;
+        } else if (!isConnected) {
+          subtitle = 'Server unreachable';
+          icon = Icons.cloud_off;
+          iconColor = AppColors.error;
+        } else if (lastSync != null) {
+          final diff = DateTime.now().difference(lastSync);
+          subtitle = diff.inMinutes < 1
+              ? 'Synced moments ago'
+              : diff.inMinutes < 60
+                  ? 'Synced ${diff.inMinutes}m ago'
+                  : 'Synced ${diff.inHours}h ago';
+          icon = Icons.cloud_done;
+          iconColor = AppColors.secondary;
+        } else if (sp.lastError != null) {
+          subtitle = 'Sync Error: ${sp.lastError}';
+          icon = Icons.sync_problem;
+          iconColor = AppColors.error;
+        } else {
+          subtitle = 'Waiting for first sync';
+          icon = Icons.cloud_outlined;
+          iconColor = AppColors.onSurfaceVariant;
+        }
+        return ListTile(
+          leading: Icon(icon, color: iconColor),
+          title: Text('Cloud Status', style: AppTypography.bodyLg.copyWith(fontWeight: FontWeight.w500)),
+          subtitle: Text(subtitle, style: AppTypography.bodySm),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        );
+      },
     );
   }
 

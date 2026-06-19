@@ -30,7 +30,7 @@
 - **Items & Routing Matrix:**
   | Index | Label | Icon | Route Destination |
   | :--- | :--- | :--- | :--- |
-  | 0 | Dashboard | `Icons.grid_view_rounded` | `/dashboard` |
+  | 0 | Personal | `Icons.grid_view_rounded` | `/personal` |
   | 1 | Chat | `Icons.chat_bubble_outline_rounded` | `/chat` |
   | 2 | Tickets | `Icons.confirmation_number_outlined` | `/tickets` |
   | 3 | Booking | `Icons.calendar_today_rounded` | `/booking` |
@@ -40,7 +40,7 @@
 
 ## Screen Breakdown
 
-### 1. Dashboard Screen (`/dashboard`)
+### 1. Personal Screen (`/personal`)
 
 #### Structural Grid & Layout Constraints
 - **Scroll View:** Vertical `SingleChildScrollView` containing a constrained layout.
@@ -86,9 +86,9 @@
 
 #### User Flow Destinations
 - **Download Report Click:** Dispatches asynchronous platform print binary channel export.
-- **Expense Item Click:** Routes to `/dashboard/expenses/:id`.
-- **View All Expenses Click:** Routes to `/dashboard/expenses`.
-- **Make a Payment Click:** Routes to `/dashboard/pay`.
+- **Expense Item Click:** Routes to `/personal/expenses/:id`.
+- **View All Expenses Click:** Routes to `/personal/expenses`.
+- **Make a Payment Click:** Routes to `/personal/pay`.
 
 ---
 

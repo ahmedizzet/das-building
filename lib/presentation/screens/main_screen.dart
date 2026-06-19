@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-import '../providers/member_provider.dart';
+import '../providers/dashboard_provider.dart';
 import '../providers/group_provider.dart';
-import 'dashboard_screen.dart';
+import '../providers/sync_provider.dart';
+import 'personal_screen.dart';
 import 'chat_screen.dart';
 import 'tickets_screen.dart';
 import 'onboarding.dart';
-import 'members_screen.dart';
+import 'dashboard.dart';
 import 'settings_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -25,8 +26,8 @@ class _MainScreenState extends State<MainScreen> {
 
   List<Widget> _getScreens(bool isAdmin) {
     return [
+      const PersonalScreen(),
       const DashboardScreen(),
-      const MembersScreen(),
       const ChatScreen(),
       const TicketsScreen(),
       if (isAdmin) const OnboardingScreen(),
@@ -39,9 +40,12 @@ class _MainScreenState extends State<MainScreen> {
     if (!_initialized) {
       _initialized = true;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        await context.read<MemberProvider>().loadCurrentUser(widget.phoneNumber);
+        await context.read<DashboardProvider>().loadCurrentUser(widget.phoneNumber);
         if (mounted) {
           await context.read<GroupProvider>().loadGroup();
+          if (mounted) {
+            context.read<SyncProvider>().syncNow();
+          }
         }
       });
     }
@@ -61,7 +65,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _showProfile() {
-    final user = context.read<MemberProvider>().currentUser;
+    final user = context.read<DashboardProvider>().currentUser;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -119,6 +123,24 @@ class _MainScreenState extends State<MainScreen> {
           ],
         ),
         actions: [
+          Consumer<SyncProvider>(
+            builder: (context, syncProvider, child) {
+              return IconButton(
+                onPressed: syncProvider.isSyncing ? null : () => syncProvider.syncNow(),
+                icon: syncProvider.isSyncing
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                      )
+                    : Icon(
+                        Icons.sync_rounded,
+                        color: syncProvider.serverReachable ? AppColors.secondary : AppColors.outline,
+                      ),
+                tooltip: 'Sync Data',
+              );
+            },
+          ),
           IconButton(
             onPressed: _openSettings,
             icon: const Icon(Icons.settings_outlined),
@@ -128,7 +150,7 @@ class _MainScreenState extends State<MainScreen> {
       ),
       body: IndexedStack(
         index: _selectedIndex,
-        children: _getScreens(context.watch<MemberProvider>().isAdmin),
+        children: _getScreens(context.watch<DashboardProvider>().isAdmin),
       ),
       bottomNavigationBar: Container(
         height: 84,
@@ -137,7 +159,7 @@ class _MainScreenState extends State<MainScreen> {
             top: BorderSide(color: AppColors.outlineVariant, width: 1),
           ),
         ),
-        child: Consumer<MemberProvider>(
+        child: Consumer<DashboardProvider>(
           builder: (context, memberProvider, child) {
             final isAdmin = memberProvider.isAdmin;
             return BottomNavigationBar(
@@ -146,11 +168,11 @@ class _MainScreenState extends State<MainScreen> {
               items: [
                 const BottomNavigationBarItem(
                   icon: Icon(Icons.grid_view_rounded),
-                  label: 'Dashboard',
+                  label: 'Personal',
                 ),
                 const BottomNavigationBarItem(
                   icon: Icon(Icons.people_outline_rounded),
-                  label: 'Members',
+                  label: 'Dashboard',
                 ),
                 const BottomNavigationBarItem(
                   icon: Icon(Icons.chat_bubble_outline_rounded),

@@ -5,20 +5,28 @@ import '../models/expense.dart' as model;
 
 class IsarExpenseRepository implements ExpenseRepository {
   final Isar isar;
+  final String Function() _tenantIdProvider;
 
-  IsarExpenseRepository(this.isar);
+  IsarExpenseRepository(this.isar, this._tenantIdProvider);
 
   @override
   Future<List<entity.Expense>> getExpenses() async {
-    final expenses = await isar.expenses.where().filter().isDeletedEqualTo(false).sortByDateDesc().findAll();
+    final tenantId = _tenantIdProvider();
+    final expenses = await isar.expenses
+        .filter()
+        .tenantIdEqualTo(tenantId)
+        .and()
+        .isDeletedEqualTo(false)
+        .sortByDateDesc()
+        .findAll();
     return expenses.map((e) => _toEntity(e)).toList();
   }
 
   @override
-  Future<void> addExpense(entity.Expense expense) async {
+  Future<void> addExpense(entity.Expense expense, String tenantId) async {
     final newExpense = model.Expense()
-      ..serverId = expense.id // In a real app, this might be temporary or generated
-      ..tenantId = 'default_tenant' // This would come from an auth service
+      ..serverId = expense.id 
+      ..tenantId = tenantId
       ..title = expense.title
       ..amount = expense.amount
       ..date = expense.date
@@ -34,9 +42,11 @@ class IsarExpenseRepository implements ExpenseRepository {
 
   @override
   Stream<List<entity.Expense>> watchExpenses() {
+    final tenantId = _tenantIdProvider();
     return isar.expenses
-        .where()
         .filter()
+        .tenantIdEqualTo(tenantId)
+        .and()
         .isDeletedEqualTo(false)
         .sortByDateDesc()
         .watch(fireImmediately: true)

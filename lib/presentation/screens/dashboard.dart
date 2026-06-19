@@ -5,10 +5,11 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/member.dart';
 import '../../domain/entities/payment.dart';
-import '../providers/member_provider.dart';
+import '../providers/dashboard_provider.dart';
+import '../providers/personal_provider.dart';
 
-class MembersScreen extends StatelessWidget {
-  const MembersScreen({super.key});
+class DashboardScreen extends StatelessWidget {
+  const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +21,7 @@ class _MembersBody extends StatelessWidget {
   const _MembersBody();
 
   void _showRecordPaymentSheet(BuildContext context) {
-    final provider = context.read<MemberProvider>();
+    final provider = context.read<DashboardProvider>();
     final members = provider.allMembers;
     String? selectedMemberId;
     final amountController = TextEditingController();
@@ -86,7 +87,7 @@ class _MembersBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<MemberProvider>();
+    final provider = context.watch<DashboardProvider>();
     final monthLabel = DateFormat('MMMM yyyy').format(DateTime(provider.targetYear, provider.targetMonth));
 
     return Scaffold(
@@ -95,6 +96,15 @@ class _MembersBody extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text("Financial Overview", style: AppTypography.headlineLgMobile),
+            const SizedBox(height: 4),
+            Text(
+              "Building financial status and personal dues.",
+              style: AppTypography.bodySm.copyWith(color: AppColors.onSurfaceVariant),
+            ),
+            const SizedBox(height: 16),
+            const FinancialHeroCard(),
+            const SizedBox(height: 24),
             Text("Member Collections", style: AppTypography.headlineLgMobile),
             const SizedBox(height: 16),
             _MonthOverviewCard(
@@ -217,6 +227,7 @@ class _MembersBody extends StatelessWidget {
       ),
       floatingActionButton: provider.isAdmin
           ? FloatingActionButton(
+              heroTag: 'members_fab',
               onPressed: () => _showRecordPaymentSheet(context),
               backgroundColor: AppColors.primaryContainer,
               foregroundColor: Colors.white,
@@ -401,6 +412,68 @@ class _MemberPaymentCard extends StatelessWidget {
             ),
           if (hasPaid)
             const Icon(Icons.check_circle, color: AppColors.secondary, size: 20),
+        ],
+      ),
+    );
+  }
+}
+
+class FinancialHeroCard extends StatelessWidget {
+  const FinancialHeroCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = Provider.of<PersonalProvider>(context);
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1E40AF), Color(0xFF00288E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Total Building Balance",
+            style: AppTypography.labelBold.copyWith(color: AppColors.onPrimaryContainer),
+          ),
+          Text(
+            "\$${provider.buildingBalance.toStringAsFixed(2).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}",
+            style: AppTypography.financialDisplay.copyWith(color: AppColors.onPrimary),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            "Monthly Income (Est)",
+            style: AppTypography.labelBold.copyWith(color: AppColors.onPrimaryContainer),
+          ),
+          Text(
+            "+\$${provider.monthlyIncome.toStringAsFixed(2)}",
+            style: AppTypography.headlineMd.copyWith(color: AppColors.secondaryFixed),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            "Monthly Expenses (YTD Avg)",
+            style: AppTypography.labelBold.copyWith(color: AppColors.onPrimaryContainer),
+          ),
+          Text(
+            "-\$${provider.monthlyExpenses.toStringAsFixed(2)}",
+            style: AppTypography.headlineMd.copyWith(color: AppColors.errorContainer),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: () => provider.downloadReport(),
+            icon: const Icon(Icons.download),
+            label: const Text("Download Report"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryContainer,
+              foregroundColor: AppColors.onPrimary,
+            ),
+          ),
         ],
       ),
     );

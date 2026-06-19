@@ -5,7 +5,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/ticket.dart';
 import '../providers/ticket_provider.dart';
-import '../providers/member_provider.dart';
+import '../providers/dashboard_provider.dart';
 
 class TicketsScreen extends StatelessWidget {
   const TicketsScreen({super.key});
@@ -123,8 +123,9 @@ class TicketsScreen extends StatelessWidget {
           ],
         ),
       ),
-      floatingActionButton: context.watch<MemberProvider>().isAdmin
+      floatingActionButton: context.watch<DashboardProvider>().isAdmin
           ? FloatingActionButton(
+              heroTag: 'tickets_fab',
               onPressed: () => _showAddTicketSheet(context),
               backgroundColor: AppColors.primaryContainer,
               foregroundColor: Colors.white,

@@ -5,20 +5,29 @@ import '../models/ticket.dart' as model;
 
 class IsarTicketRepository implements TicketRepository {
   final Isar isar;
+  final String Function() _tenantIdProvider;
 
-  IsarTicketRepository(this.isar);
+  IsarTicketRepository(this.isar, this._tenantIdProvider);
 
   @override
   Future<List<entity.Ticket>> getTickets() async {
-    final tickets = await isar.tickets.where().filter().isDeletedEqualTo(false).sortByDateDesc().findAll();
+    final tenantId = _tenantIdProvider();
+    final tickets = await isar.tickets
+        .filter()
+        .tenantIdEqualTo(tenantId)
+        .and()
+        .isDeletedEqualTo(false)
+        .sortByDateDesc()
+        .findAll();
     return tickets.map((e) => _toEntity(e)).toList();
   }
 
   @override
   Future<void> addTicket(entity.Ticket ticket) async {
+    final tenantId = _tenantIdProvider();
     final newTicket = model.Ticket()
       ..serverId = ticket.id
-      ..tenantId = 'default_tenant'
+      ..tenantId = tenantId
       ..title = ticket.title
       ..description = ticket.description
       ..date = ticket.date
@@ -48,9 +57,11 @@ class IsarTicketRepository implements TicketRepository {
 
   @override
   Stream<List<entity.Ticket>> watchTickets() {
+    final tenantId = _tenantIdProvider();
     return isar.tickets
-        .where()
         .filter()
+        .tenantIdEqualTo(tenantId)
+        .and()
         .isDeletedEqualTo(false)
         .sortByDateDesc()
         .watch(fireImmediately: true)

@@ -74,7 +74,7 @@ class IsarMemberRepository implements MemberRepository {
   model.Member _toModel(entity.Member m) {
     return model.Member()
       ..serverId = m.id
-      ..tenantId = 'default_tenant'
+      ..tenantId = m.groupId ?? 'default_tenant'
       ..name = m.name
       ..unit = m.unit
       ..balance = m.balance

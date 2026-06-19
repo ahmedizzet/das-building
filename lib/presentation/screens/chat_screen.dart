@@ -6,7 +6,7 @@ import '../../core/theme/app_typography.dart';
 import '../../domain/entities/announcement.dart';
 import '../../domain/entities/message.dart';
 import '../providers/chat_provider.dart';
-import '../providers/member_provider.dart';
+import '../providers/dashboard_provider.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -26,7 +26,7 @@ class _ChatScreenState extends State<ChatScreen> {
     super.dispose();
   }
 
-  void _sendMessage(ChatProvider chatProvider, MemberProvider memberProvider) {
+  void _sendMessage(ChatProvider chatProvider, DashboardProvider memberProvider) {
     final user = memberProvider.currentUser;
     if (user == null) return;
     final text = _messageController.text;
@@ -54,7 +54,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final chatProvider = Provider.of<ChatProvider>(context);
-    final memberProvider = Provider.of<MemberProvider>(context);
+    final memberProvider = Provider.of<DashboardProvider>(context);
 
     if (chatProvider.selectedTabIndex == 1) {
       return _buildLoungeView(chatProvider, memberProvider);
@@ -78,7 +78,7 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Widget _buildLoungeView(ChatProvider chatProvider, MemberProvider memberProvider) {
+  Widget _buildLoungeView(ChatProvider chatProvider, DashboardProvider memberProvider) {
     return Column(
       children: [
         Padding(

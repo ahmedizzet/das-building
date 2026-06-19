@@ -3,93 +3,17 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../providers/personal_provider.dart';
 import '../providers/dashboard_provider.dart';
-import '../providers/member_provider.dart';
 
-class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text("Financial Overview", style: AppTypography.headlineLgMobile),
-          const SizedBox(height: 4),
-          Text(
-            "Building financial status and personal dues.",
-            style: AppTypography.bodySm.copyWith(color: AppColors.onSurfaceVariant),
-          ),
-          const SizedBox(height: 16),
-          const FinancialHeroCard(),
-          const SizedBox(height: 24),
-          const RecentExpensesSection(),
-        ],
-      ),
-    );
-  }
-}
-
-class FinancialHeroCard extends StatelessWidget {
-  const FinancialHeroCard({super.key});
+class PersonalScreen extends StatelessWidget {
+  const PersonalScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<DashboardProvider>(context);
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1E40AF), Color(0xFF00288E)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Total Building Balance",
-            style: AppTypography.labelBold.copyWith(color: AppColors.onPrimaryContainer),
-          ),
-          Text(
-            "\$${provider.buildingBalance.toStringAsFixed(2).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}",
-            style: AppTypography.financialDisplay.copyWith(color: AppColors.onPrimary),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            "Monthly Income (Est)",
-            style: AppTypography.labelBold.copyWith(color: AppColors.onPrimaryContainer),
-          ),
-          Text(
-            "+\$${provider.monthlyIncome.toStringAsFixed(2)}",
-            style: AppTypography.headlineMd.copyWith(color: AppColors.secondaryFixed),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            "Monthly Expenses (YTD Avg)",
-            style: AppTypography.labelBold.copyWith(color: AppColors.onPrimaryContainer),
-          ),
-          Text(
-            "-\$${provider.monthlyExpenses.toStringAsFixed(2)}",
-            style: AppTypography.headlineMd.copyWith(color: AppColors.errorContainer),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: () => provider.downloadReport(),
-            icon: const Icon(Icons.download),
-            label: const Text("Download Report"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryContainer,
-              foregroundColor: AppColors.onPrimary,
-            ),
-          ),
-        ],
-      ),
+    return const SingleChildScrollView(
+      padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+      child: RecentExpensesSection(),
     );
   }
 }
@@ -101,7 +25,7 @@ class RecentExpensesSection extends StatelessWidget {
     final titleController = TextEditingController();
     final amountController = TextEditingController();
     String selectedCategory = 'Maintenance';
-    final provider = Provider.of<DashboardProvider>(context, listen: false);
+    final provider = Provider.of<PersonalProvider>(context, listen: false);
 
     showModalBottomSheet(
       context: context,
@@ -209,17 +133,23 @@ class RecentExpensesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<DashboardProvider>(context);
+    final provider = Provider.of<PersonalProvider>(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text("Recent Building Expenses", style: AppTypography.headlineMd),
+            Expanded(
+              child: Text(
+                "Recent Building Expenses",
+                style: AppTypography.headlineMd,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
             Row(
               children: [
-                if (context.watch<MemberProvider>().isAdmin)
+                if (context.watch<DashboardProvider>().isAdmin)
                   IconButton(
                     onPressed: () => _showAddExpenseSheet(context),
                     icon: const Icon(Icons.add_circle_outline, color: AppColors.primary),

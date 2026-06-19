@@ -4,12 +4,13 @@ import '../../domain/entities/group.dart';
 import '../../domain/entities/member.dart';
 import '../../domain/repositories/group_repository.dart';
 import '../../domain/repositories/member_repository.dart';
-import 'member_provider.dart';
+import 'dashboard_provider.dart';
+import '../../core/utils/id_generator.dart';
 
 class GroupProvider with ChangeNotifier {
   final GroupRepository _groupRepository;
   final MemberRepository _memberRepository;
-  final MemberProvider _memberProvider;
+  final DashboardProvider _memberProvider;
 
   GroupProvider(this._groupRepository, this._memberRepository, this._memberProvider);
 
@@ -43,7 +44,7 @@ class GroupProvider with ChangeNotifier {
     try {
       final inviteCode = _generateInviteCode();
       final newGroup = BuildingGroup(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: IdGenerator.generate(),
         name: name,
         inviteCode: inviteCode,
       );
@@ -51,10 +52,10 @@ class GroupProvider with ChangeNotifier {
       await _groupRepository.createGroup(newGroup);
       
       // Update user with group ID
-      final updatedUser = user.copyWith(groupId: newGroup.id);
+      final updatedUser = user.copyWith(groupId: newGroup.id, role: MemberRole.admin);
       await _memberRepository.updateMember(updatedUser);
       
-      // Sync with MemberProvider
+      // Sync with DashboardProvider
       await _memberProvider.loadCurrentUser(user.phoneNumber);
       
       _currentGroup = newGroup;
