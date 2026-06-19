@@ -4,7 +4,7 @@ import 'core/theme/app_theme.dart';
 import 'presentation/providers/dashboard_provider.dart';
 import 'presentation/providers/ticket_provider.dart';
 import 'presentation/providers/member_provider.dart';
-import 'presentation/screens/main_screen.dart';
+import 'presentation/screens/login_screen.dart';
 
 void main() {
   runApp(
@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
       title: 'Civic Hearth',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const MainScreen(),
+      home: const LoginScreen(),
     );
   }
 }
