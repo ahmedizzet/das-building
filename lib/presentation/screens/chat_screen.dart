@@ -7,6 +7,7 @@ import '../../domain/entities/announcement.dart';
 import '../../domain/entities/message.dart';
 import '../providers/chat_provider.dart';
 import '../providers/dashboard_provider.dart';
+import '../widgets/modern_components.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -65,8 +66,8 @@ class _ChatScreenState extends State<ChatScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Community Chat", style: AppTypography.headlineLgMobile),
-          const SizedBox(height: 16),
+          const SectionHeader(title: "Community Chat"),
+          const SizedBox(height: 8),
           SegmentedControl(
             selectedIndex: chatProvider.selectedTabIndex,
             onTabChanged: chatProvider.setSelectedTabIndex,
@@ -86,8 +87,8 @@ class _ChatScreenState extends State<ChatScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Community Chat", style: AppTypography.headlineLgMobile),
-              const SizedBox(height: 16),
+              const SectionHeader(title: "Community Chat"),
+              const SizedBox(height: 8),
               SegmentedControl(
                 selectedIndex: chatProvider.selectedTabIndex,
                 onTabChanged: chatProvider.setSelectedTabIndex,
@@ -126,36 +127,54 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         Container(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceContainerLowest,
-            border: Border(
-              top: BorderSide(color: AppColors.outlineVariant.withValues(alpha: 0.5)),
-            ),
-          ),
           child: SafeArea(
             top: false,
             child: Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: InputDecoration(
-                      hintText: "Type a message...",
-                      filled: true,
-                      fillColor: AppColors.surfaceContainer,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
-                      ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.3)),
                     ),
-                    textInputAction: TextInputAction.send,
-                    onSubmitted: (_) => _sendMessage(chatProvider, memberProvider),
+                    child: TextField(
+                      controller: _messageController,
+                      decoration: InputDecoration(
+                        hintText: "Type a message...",
+                        filled: true,
+                        fillColor: Colors.transparent,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      textInputAction: TextInputAction.send,
+                      onSubmitted: (_) => _sendMessage(chatProvider, memberProvider),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
-                CircleAvatar(
-                  backgroundColor: AppColors.primary,
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppColors.primary, AppColors.primaryContainer],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
                   child: IconButton(
                     icon: const Icon(Icons.send_rounded, size: 18, color: Colors.white),
                     onPressed: () => _sendMessage(chatProvider, memberProvider),
@@ -182,9 +201,8 @@ class _ChatScreenState extends State<ChatScreen> {
             child: PinnedAnnouncementCard(announcement: a),
           )),
         if (regular.isEmpty && pinned.isEmpty)
-          Container(
+          GlassCard(
             padding: const EdgeInsets.all(32),
-            alignment: Alignment.center,
             child: Column(
               children: [
                 Icon(Icons.campaign_outlined, size: 64, color: AppColors.outlineVariant),
@@ -223,7 +241,7 @@ class _MessageBubble extends StatelessWidget {
         children: [
           if (!isMe)
             Padding(
-              padding: const EdgeInsets.only(left: 4, bottom: 2),
+              padding: const EdgeInsets.only(left: 4, bottom: 4),
               child: Text(senderName, style: AppTypography.labelBold.copyWith(fontSize: 10, color: AppColors.primary)),
             ),
           Row(
@@ -232,15 +250,30 @@ class _MessageBubble extends StatelessWidget {
               if (!isMe) const SizedBox(width: 0),
               Flexible(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    color: isMe ? AppColors.primary : AppColors.surfaceContainer,
+                    gradient: isMe
+                        ? LinearGradient(
+                            colors: [AppColors.primary, AppColors.primaryContainer],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          )
+                        : null,
+                    color: isMe ? null : Colors.white.withValues(alpha: 0.85),
                     borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(16),
-                      topRight: const Radius.circular(16),
-                      bottomLeft: Radius.circular(isMe ? 16 : 4),
-                      bottomRight: Radius.circular(isMe ? 4 : 16),
+                      topLeft: const Radius.circular(18),
+                      topRight: const Radius.circular(18),
+                      bottomLeft: Radius.circular(isMe ? 18 : 4),
+                      bottomRight: Radius.circular(isMe ? 4 : 18),
                     ),
+                    border: isMe ? null : Border.all(color: Colors.white.withValues(alpha: 0.5)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (isMe ? AppColors.primary : Colors.black).withValues(alpha: 0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
@@ -251,7 +284,7 @@ class _MessageBubble extends StatelessWidget {
                           color: isMe ? Colors.white : AppColors.onSurface,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 4),
                       Text(
                         DateFormat('h:mm a').format(message.createdAt),
                         style: TextStyle(
@@ -287,24 +320,36 @@ class SegmentedControl extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainer,
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
           Expanded(
             child: GestureDetector(
               onTap: () => onTabChanged(0),
-              child: Container(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
-                  color: selectedIndex == 0 ? Colors.white : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8),
+                  gradient: selectedIndex == 0
+                      ? LinearGradient(
+                          colors: [
+                            AppColors.primary.withValues(alpha: 0.9),
+                            AppColors.primary,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
+                  color: selectedIndex == 0 ? null : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
                   boxShadow: selectedIndex == 0
                       ? [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 4,
+                            color: AppColors.primary.withValues(alpha: 0.2),
+                            blurRadius: 6,
                             offset: const Offset(0, 2),
                           ),
                         ]
@@ -314,7 +359,7 @@ class SegmentedControl extends StatelessWidget {
                 child: Text(
                   "Announcements",
                   style: AppTypography.labelBold.copyWith(
-                    color: selectedIndex == 0 ? AppColors.primary : AppColors.onSurfaceVariant,
+                    color: selectedIndex == 0 ? Colors.white : AppColors.onSurfaceVariant,
                   ),
                 ),
               ),
@@ -323,16 +368,27 @@ class SegmentedControl extends StatelessWidget {
           Expanded(
             child: GestureDetector(
               onTap: () => onTabChanged(1),
-              child: Container(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
-                  color: selectedIndex == 1 ? Colors.white : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8),
+                  gradient: selectedIndex == 1
+                      ? LinearGradient(
+                          colors: [
+                            AppColors.primary.withValues(alpha: 0.9),
+                            AppColors.primary,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
+                  color: selectedIndex == 1 ? null : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
                   boxShadow: selectedIndex == 1
                       ? [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 4,
+                            color: AppColors.primary.withValues(alpha: 0.2),
+                            blurRadius: 6,
                             offset: const Offset(0, 2),
                           ),
                         ]
@@ -342,7 +398,7 @@ class SegmentedControl extends StatelessWidget {
                 child: Text(
                   "Lounge",
                   style: AppTypography.labelBold.copyWith(
-                    color: selectedIndex == 1 ? AppColors.primary : AppColors.onSurfaceVariant,
+                    color: selectedIndex == 1 ? Colors.white : AppColors.onSurfaceVariant,
                   ),
                 ),
               ),
@@ -360,33 +416,38 @@ class PinnedAnnouncementCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(12),
-        border: const Border(
-          left: BorderSide(color: AppColors.primary, width: 4),
-        ),
-      ),
+    return GlassCard(
+      accentColor: AppColors.primary,
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.push_pin_rounded, size: 16, color: AppColors.primary),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.push_pin_rounded, size: 14, color: AppColors.primary),
+              ),
               const SizedBox(width: 8),
               Text("PINNED ANNOUNCEMENT", style: AppTypography.labelBold.copyWith(color: AppColors.primary)),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Text(announcement.title, style: AppTypography.headlineMd),
           const SizedBox(height: 4),
           Text(announcement.content, style: AppTypography.bodyLg),
           const SizedBox(height: 12),
           Row(
             children: [
-              const CircleAvatar(radius: 12, backgroundColor: AppColors.surfaceDim, child: Icon(Icons.business, size: 14)),
+              CircleAvatar(
+                radius: 12,
+                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                child: const Icon(Icons.business, size: 14, color: AppColors.primary),
+              ),
               const SizedBox(width: 8),
               Text(
                 "${announcement.author} • ${_formatDate(announcement.date)}",
@@ -414,23 +475,21 @@ class AnnouncementCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.outlineVariant),
-      ),
+    return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(announcement.title, style: AppTypography.headlineMd),
           const SizedBox(height: 4),
           Text(announcement.content, style: AppTypography.bodyLg),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Row(
             children: [
-              const CircleAvatar(radius: 10, backgroundColor: AppColors.surfaceDim, child: Icon(Icons.person, size: 12)),
+              CircleAvatar(
+                radius: 10,
+                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                child: const Icon(Icons.person, size: 12, color: AppColors.primary),
+              ),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
@@ -440,12 +499,13 @@ class AnnouncementCard extends StatelessWidget {
               ),
               if (announcement.category != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceContainer,
+                    color: AppColors.secondary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.secondary.withValues(alpha: 0.2)),
                   ),
-                  child: Text(announcement.category!, style: AppTypography.labelBold.copyWith(fontSize: 10)),
+                  child: Text(announcement.category!, style: AppTypography.labelBold.copyWith(fontSize: 10, color: AppColors.secondary)),
                 ),
             ],
           ),

@@ -32,7 +32,7 @@ class AppTheme {
         onSurfaceVariant: AppColors.onSurfaceVariant,
         outline: AppColors.outline,
         outlineVariant: AppColors.outlineVariant,
-        shadow: Colors.black.withOpacity(0.06),
+        shadow: Colors.black.withValues(alpha: 0.06),
         inverseSurface: AppColors.inverseSurface,
         onInverseSurface: AppColors.inverseOnSurface,
         inversePrimary: AppColors.inversePrimary,
@@ -47,37 +47,103 @@ class AppTheme {
         labelLarge: AppTypography.labelBold,
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 0,
         titleTextStyle: AppTypography.headlineMd.copyWith(color: AppColors.onSurface),
         iconTheme: const IconThemeData(color: AppColors.onSurface),
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: AppColors.surfaceContainerLowest,
-        selectedItemColor: AppColors.onSecondaryContainer,
+        backgroundColor: Colors.white.withValues(alpha: 0.8),
+        selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.onSurfaceVariant,
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
-        selectedLabelStyle: AppTypography.labelBold,
-        unselectedLabelStyle: AppTypography.labelBold,
+        selectedLabelStyle: AppTypography.labelBold.copyWith(fontSize: 11),
+        unselectedLabelStyle: AppTypography.labelBold.copyWith(fontSize: 11, fontWeight: FontWeight.w400),
+        elevation: 0,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryContainer,
+          backgroundColor: AppColors.primary,
           foregroundColor: AppColors.onPrimary,
           textStyle: AppTypography.bodyLg.copyWith(fontWeight: FontWeight.w600),
+          elevation: 0,
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
           ),
+          shadowColor: AppColors.primary.withValues(alpha: 0.2),
         ),
       ),
       cardTheme: CardThemeData(
-        color: AppColors.surfaceContainerLowest,
+        color: Colors.transparent,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.outlineVariant, width: 1),
+          side: BorderSide.none,
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+        elevation: 0,
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+      dividerTheme: DividerThemeData(
+        color: AppColors.outlineVariant.withValues(alpha: 0.5),
+        thickness: 1,
+        space: 1,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.surface,
+        labelStyle: AppTypography.labelBold.copyWith(
+          color: AppColors.onSurfaceVariant,
+        ),
+        hintStyle: AppTypography.bodyLg.copyWith(color: AppColors.outlineVariant),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: AppColors.outlineVariant.withValues(alpha: 0.5)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: AppColors.outlineVariant.withValues(alpha: 0.5)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.error),
         ),
       ),
     );

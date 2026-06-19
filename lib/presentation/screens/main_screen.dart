@@ -6,6 +6,7 @@ import '../../core/theme/app_typography.dart';
 import '../providers/dashboard_provider.dart';
 import '../providers/group_provider.dart';
 import '../providers/sync_provider.dart';
+import '../widgets/modern_components.dart';
 import 'personal_screen.dart';
 import 'chat_screen.dart';
 import 'tickets_screen.dart';
@@ -67,36 +68,66 @@ class _MainScreenState extends State<MainScreen> {
 
   void _showProfile() {
     final user = context.read<DashboardProvider>().currentUser;
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("My Profile"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Name: ${user?.name ?? 'Resident'}", style: AppTypography.bodyLg),
-            const SizedBox(height: 8),
-            if (user?.unit != null && user!.unit.isNotEmpty)
-              Text("Unit: ${user.unit}", style: AppTypography.bodyLg),
-            const SizedBox(height: 8),
-            Text("Phone: ${user?.phoneNumber ?? widget.phoneNumber}", style: AppTypography.bodyLg),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Close"),
+    ModernDialog.show(
+      context,
+      title: "My Profile",
+      icon: Icons.person_rounded,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: CircleAvatar(
+              radius: 40,
+              backgroundColor: AppColors.surfaceContainer,
+              backgroundImage: user?.imageUrl != null && user!.imageUrl.isNotEmpty
+                  ? (user.imageUrl.startsWith('/') || user.imageUrl.startsWith('file://')
+                      ? FileImage(File(user.imageUrl))
+                      : NetworkImage(user.imageUrl))
+                  : null,
+              child: user?.imageUrl == null || user!.imageUrl.isEmpty
+                  ? Icon(Icons.person, size: 40, color: AppColors.outline)
+                  : null,
+            ),
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _openSettings();
-            },
-            child: const Text("Edit in Settings"),
-          ),
+          const SizedBox(height: 16),
+          _profileRow("Name", user?.name ?? 'Resident'),
+          const SizedBox(height: 8),
+          if (user?.unit != null && user!.unit.isNotEmpty)
+            _profileRow("Unit", user.unit),
+          if (user?.unit != null || user != null) const SizedBox(height: 8),
+          _profileRow("Phone", user?.phoneNumber ?? widget.phoneNumber),
         ],
       ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          style: TextButton.styleFrom(foregroundColor: AppColors.onSurfaceVariant),
+          child: const Text("Close"),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context);
+            _openSettings();
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          child: const Text("Edit"),
+        ),
+      ],
+    );
+  }
+
+  Widget _profileRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: AppTypography.bodySm.copyWith(color: AppColors.onSurfaceVariant)),
+        Text(value, style: AppTypography.bodyLg.copyWith(fontWeight: FontWeight.w500)),
+      ],
     );
   }
 
@@ -151,17 +182,31 @@ class _MainScreenState extends State<MainScreen> {
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
                       )
-                    : Icon(
-                        Icons.sync_rounded,
-                        color: syncProvider.serverReachable ? AppColors.secondary : AppColors.outline,
+                    : Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: (syncProvider.serverReachable ? AppColors.secondary : AppColors.outline).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          Icons.sync_rounded,
+                          size: 18,
+                          color: syncProvider.serverReachable ? AppColors.secondary : AppColors.outline,
+                        ),
                       ),
                 tooltip: 'Sync Data',
               );
             },
           ),
-          IconButton(
-            onPressed: _openSettings,
-            icon: const Icon(Icons.settings_outlined),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: IconButton(
+              onPressed: _openSettings,
+              icon: const Icon(Icons.settings_outlined, size: 20),
+            ),
           ),
           const SizedBox(width: 8),
         ],
@@ -171,41 +216,70 @@ class _MainScreenState extends State<MainScreen> {
         children: _getScreens(context.watch<DashboardProvider>().isAdmin),
       ),
       bottomNavigationBar: Container(
-        height: 84,
-        decoration: const BoxDecoration(
-          border: Border(
-            top: BorderSide(color: AppColors.outlineVariant, width: 1),
+        height: 72,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.white.withValues(alpha: 0.95),
+              Colors.white.withValues(alpha: 0.85),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 5),
+            ),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
         ),
         child: Consumer<DashboardProvider>(
           builder: (context, memberProvider, child) {
             final isAdmin = memberProvider.isAdmin;
-            return BottomNavigationBar(
-              currentIndex: _selectedIndex,
-              onTap: _onItemTapped,
-              items: [
-                const BottomNavigationBarItem(
-                  icon: Icon(Icons.grid_view_rounded),
-                  label: 'Personal',
-                ),
-                const BottomNavigationBarItem(
-                  icon: Icon(Icons.people_outline_rounded),
-                  label: 'Dashboard',
-                ),
-                const BottomNavigationBarItem(
-                  icon: Icon(Icons.chat_bubble_outline_rounded),
-                  label: 'Chat',
-                ),
-                const BottomNavigationBarItem(
-                  icon: Icon(Icons.confirmation_number_outlined),
-                  label: 'Tickets',
-                ),
-                if (isAdmin)
+            return ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: BottomNavigationBar(
+                currentIndex: _selectedIndex,
+                onTap: _onItemTapped,
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                items: [
                   const BottomNavigationBarItem(
-                    icon: Icon(Icons.calendar_today_rounded),
-                    label: 'Onboarding',
+                    icon: Icon(Icons.grid_view_rounded),
+                    activeIcon: Icon(Icons.grid_view_rounded),
+                    label: 'Personal',
                   ),
-              ],
+                  const BottomNavigationBarItem(
+                    icon: Icon(Icons.people_outline_rounded),
+                    activeIcon: Icon(Icons.people_rounded),
+                    label: 'Dashboard',
+                  ),
+                  const BottomNavigationBarItem(
+                    icon: Icon(Icons.chat_bubble_outline_rounded),
+                    activeIcon: Icon(Icons.chat_bubble_rounded),
+                    label: 'Chat',
+                  ),
+                  const BottomNavigationBarItem(
+                    icon: Icon(Icons.confirmation_number_outlined),
+                    activeIcon: Icon(Icons.confirmation_number_rounded),
+                    label: 'Tickets',
+                  ),
+                  if (isAdmin)
+                    const BottomNavigationBarItem(
+                      icon: Icon(Icons.calendar_today_rounded),
+                      activeIcon: Icon(Icons.calendar_today_rounded),
+                      label: 'Onboarding',
+                    ),
+                ],
+              ),
             );
           },
         ),

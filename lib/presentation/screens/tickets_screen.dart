@@ -6,6 +6,7 @@ import '../../core/theme/app_typography.dart';
 import '../../domain/entities/ticket.dart';
 import '../providers/ticket_provider.dart';
 import '../providers/dashboard_provider.dart';
+import '../widgets/modern_components.dart';
 
 class TicketsScreen extends StatelessWidget {
   const TicketsScreen({super.key});
@@ -16,62 +17,75 @@ class TicketsScreen extends StatelessWidget {
     String selectedCategory = 'Plumbing';
     final provider = Provider.of<TicketProvider>(context, listen: false);
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          left: 20,
-          right: 20,
-          top: 20,
-        ),
-        child: Column(
+    ModernBottomSheet.show(
+      context,
+      child: StatefulBuilder(
+        builder: (context, setSheetState) => Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("New Maintenance Ticket", style: AppTypography.headlineMd),
-            const SizedBox(height: 16),
-            TextField(
-              controller: titleController,
-              decoration: const InputDecoration(labelText: 'Title', hintText: 'e.g. Leaking Pipe'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: descriptionController,
-              maxLines: 3,
-              decoration: const InputDecoration(labelText: 'Description', hintText: 'Describe the issue...'),
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              value: selectedCategory,
-              decoration: const InputDecoration(labelText: 'Category'),
-              items: ['Plumbing', 'Electrical', 'HVAC', 'General']
-                  .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                  .toList(),
-              onChanged: (val) => selectedCategory = val!,
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  if (titleController.text.isNotEmpty) {
-                    provider.addTicket(
-                      title: titleController.text,
-                      description: descriptionController.text,
-                      category: selectedCategory,
-                    );
-                    Navigator.pop(context);
-                  }
-                },
-                child: const Text("Submit Ticket"),
-              ),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.add_circle_outline, color: AppColors.primary, size: 22),
+                ),
+                const SizedBox(width: 12),
+                Text("New Maintenance Ticket", style: AppTypography.headlineMd),
+              ],
             ),
             const SizedBox(height: 20),
+            ModernInputField(
+              controller: titleController,
+              label: 'Title',
+              hintText: 'e.g. Leaking Pipe',
+            ),
+            const SizedBox(height: 12),
+            ModernInputField(
+              controller: descriptionController,
+              label: 'Description',
+              hintText: 'Describe the issue...',
+              maxLines: 3,
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.surface.withValues(alpha: 0.7),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.5)),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: selectedCategory,
+                  isExpanded: true,
+                  style: AppTypography.bodyLg,
+                  items: ['Plumbing', 'Electrical', 'HVAC', 'General']
+                      .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                      .toList(),
+                  onChanged: (val) => setSheetState(() => selectedCategory = val!),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            ModernButton(
+              label: "Submit Ticket",
+              onPressed: () {
+                if (titleController.text.isNotEmpty) {
+                  provider.addTicket(
+                    title: titleController.text,
+                    description: descriptionController.text,
+                    category: selectedCategory,
+                  );
+                  Navigator.pop(context);
+                }
+              },
+            ),
+            const SizedBox(height: 12),
           ],
         ),
       ),
@@ -87,19 +101,18 @@ class TicketsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Maintenance Tickets", style: AppTypography.headlineLgMobile),
-            const SizedBox(height: 4),
-            Text("Track and manage your service requests.", style: AppTypography.bodySm.copyWith(color: AppColors.onSurfaceVariant)),
-            const SizedBox(height: 16),
+            const SectionHeader(
+              title: "Maintenance Tickets",
+              subtitle: "Track and manage your service requests.",
+            ),
             FilterPills(
               selectedFilter: provider.selectedFilter,
               onFilterSelected: provider.setSelectedFilter,
             ),
             const SizedBox(height: 16),
             if (provider.tickets.isEmpty)
-              Container(
+              GlassCard(
                 padding: const EdgeInsets.all(32),
-                alignment: Alignment.center,
                 child: Column(
                   children: [
                     Icon(Icons.confirmation_number_outlined, size: 64, color: AppColors.outlineVariant),
@@ -127,8 +140,6 @@ class TicketsScreen extends StatelessWidget {
           ? FloatingActionButton(
               heroTag: 'tickets_fab',
               onPressed: () => _showAddTicketSheet(context),
-              backgroundColor: AppColors.primaryContainer,
-              foregroundColor: Colors.white,
               child: const Icon(Icons.add),
             )
           : null,
@@ -154,22 +165,10 @@ class FilterPills extends StatelessWidget {
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: filters.map((filter) {
-          return GestureDetector(
+          return ModernPill(
+            label: filter,
+            isSelected: selectedFilter == filter,
             onTap: () => onFilterSelected(filter),
-            child: Container(
-              margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: selectedFilter == filter ? AppColors.primary : AppColors.surfaceContainer,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                filter,
-                style: AppTypography.labelBold.copyWith(
-                  color: selectedFilter == filter ? Colors.white : AppColors.onSurfaceVariant,
-                ),
-              ),
-            ),
           );
         }).toList(),
       ),
@@ -183,19 +182,24 @@ class TicketCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.outlineVariant),
-      ),
+    final statusColor = _getStatusColor(ticket.status);
+    return GlassCard(
+      accentColor: statusColor,
+      padding: const EdgeInsets.all(0),
       child: IntrinsicHeight(
         child: Row(
           children: [
             Container(
-              width: 6,
+              width: 5,
               decoration: BoxDecoration(
-                color: _getStatusColor(ticket.status),
+                gradient: LinearGradient(
+                  colors: [
+                    statusColor.withValues(alpha: 0.8),
+                    statusColor,
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(16),
                   bottomLeft: Radius.circular(16),
@@ -211,10 +215,10 @@ class TicketCard extends StatelessWidget {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceContainer,
-                        borderRadius: BorderRadius.circular(8),
+                        color: statusColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(14),
                       ),
-                      child: Icon(_getIconForCategory(ticket.category), color: AppColors.primary),
+                      child: Icon(_getIconForCategory(ticket.category), color: statusColor, size: 22),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -222,13 +226,20 @@ class TicketCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(ticket.title, style: AppTypography.bodyLg.copyWith(fontWeight: FontWeight.w600)),
-                          Text("${_formatDate(ticket.date)} • ${ticket.category}", style: AppTypography.bodySm),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Text("${_formatDate(ticket.date)} • ${ticket.category}", style: AppTypography.bodySm),
+                              const SizedBox(width: 8),
+                              StatusIndicator(status: ticket.status == TicketStatus.pending ? 'pending' : ticket.status == TicketStatus.inProgress ? 'in progress' : 'resolved'),
+                            ],
+                          ),
                           const SizedBox(height: 8),
                           StatusChip(status: ticket.status),
                         ],
                       ),
                     ),
-                    const Icon(Icons.chevron_right_rounded, color: AppColors.outlineVariant),
+                    Icon(Icons.chevron_right_rounded, color: AppColors.outlineVariant, size: 20),
                   ],
                 ),
               ),
@@ -242,9 +253,9 @@ class TicketCard extends StatelessWidget {
   Color _getStatusColor(TicketStatus status) {
     switch (status) {
       case TicketStatus.pending:
-        return Colors.blue;
+        return const Color(0xFF3B82F6);
       case TicketStatus.inProgress:
-        return Colors.orange;
+        return const Color(0xFFF59E0B);
       case TicketStatus.resolved:
         return AppColors.secondary;
     }
@@ -266,7 +277,6 @@ class TicketCard extends StatelessWidget {
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date);
-
     if (difference.inMinutes < 60) {
       return '${difference.inMinutes} mins ago';
     } else if (difference.inHours < 24) {
@@ -290,30 +300,38 @@ class StatusChip extends StatelessWidget {
     switch (status) {
       case TicketStatus.pending:
         label = 'Pending';
-        bgColor = const Color(0xFFE0E7FF);
+        bgColor = const Color(0xFF3B82F6).withValues(alpha: 0.1);
         textColor = const Color(0xFF1E3A8A);
         break;
       case TicketStatus.inProgress:
         label = 'In Progress';
-        bgColor = const Color(0xFFFEF3C7);
+        bgColor = const Color(0xFFF59E0B).withValues(alpha: 0.1);
         textColor = const Color(0xFF92400E);
         break;
       case TicketStatus.resolved:
         label = 'Resolved';
-        bgColor = const Color(0xFFCCFBF1);
+        bgColor = AppColors.secondary.withValues(alpha: 0.1);
         textColor = const Color(0xFF115E59);
         break;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(100),
+        border: Border.all(color: textColor.withValues(alpha: 0.2)),
       ),
-      child: Text(
-        label,
-        style: AppTypography.labelBold.copyWith(color: textColor, fontSize: 10),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          StatusIndicator(status: label, size: 6),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: AppTypography.labelBold.copyWith(color: textColor, fontSize: 10),
+          ),
+        ],
       ),
     );
   }

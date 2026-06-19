@@ -6,6 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../providers/onboarding_provider.dart';
 import '../providers/group_provider.dart';
+import '../widgets/modern_components.dart';
 import '../../domain/entities/member.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -29,33 +30,36 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _showFeeDialog(String memberId, double currentFee) {
     final controller = TextEditingController(text: currentFee.toString());
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Assign Monthly Fee"),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            labelText: "Monthly Fee (EGP)",
-            prefixText: "EGP",
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final fee = double.tryParse(controller.text) ?? 0.0;
-              context.read<OnboardingProvider>().updateMonthlyFee(memberId, fee);
-              Navigator.pop(context);
-            },
-            child: const Text("Update"),
-          ),
-        ],
+    ModernDialog.show(
+      context,
+      title: "Assign Monthly Fee",
+      icon: Icons.attach_money_rounded,
+      content: ModernInputField(
+        controller: controller,
+        label: "Monthly Fee (EGP)",
+        keyboardType: TextInputType.number,
+        prefixText: "EGP ",
       ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          style: TextButton.styleFrom(foregroundColor: AppColors.onSurfaceVariant),
+          child: const Text("Cancel"),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            final fee = double.tryParse(controller.text) ?? 0.0;
+            context.read<OnboardingProvider>().updateMonthlyFee(memberId, fee);
+            Navigator.pop(context);
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          child: const Text("Update"),
+        ),
+      ],
     );
   }
 
@@ -77,14 +81,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Manage residents", style: AppTypography.headlineLgMobile),
-                const SizedBox(height: 8),
-                Text(
-                  "Share the building QR code with residents so they can join.",
-                  style: AppTypography.bodySm.copyWith(color: AppColors.onSurfaceVariant),
+                const SectionHeader(
+                  title: "Manage residents",
+                  subtitle: "Share the building QR code with residents so they can join.",
                 ),
-                const SizedBox(height: 24),
-
                 if (group != null) ...[
                   _buildInviteCard(group.inviteCode),
                   const SizedBox(height: 24),
@@ -117,13 +117,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   final gm = provider.groupMembers[index];
                   final details = provider.getMemberDetails(gm.memberId);
                   
-                  return Container(
+                  return GlassCard(
                     padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.outlineVariant),
-                    ),
                     child: Row(
                       children: [
                         CircleAvatar(
@@ -152,22 +147,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Text(
-                              "EGP ${gm.monthlyFee.toStringAsFixed(0)}/mo",
-                              style: AppTypography.labelBold.copyWith(color: AppColors.primary),
-                            ),
-                            TextButton(
-                              onPressed: () => _showFeeDialog(gm.memberId, gm.monthlyFee),
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                minimumSize: const Size(0, 0),
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(10),
                               ),
+                              child: Text(
+                                "EGP ${gm.monthlyFee.toStringAsFixed(0)}/mo",
+                                style: AppTypography.labelBold.copyWith(color: AppColors.primary, fontSize: 11),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            GestureDetector(
+                              onTap: () => _showFeeDialog(gm.memberId, gm.monthlyFee),
                               child: Text(
                                 "Edit Fee",
                                 style: AppTypography.bodySm.copyWith(
                                   color: AppColors.secondary,
-                                  decoration: TextDecoration.underline,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
@@ -185,16 +183,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildNoGroupState() {
-    return Container(
+    return GlassCard(
       padding: const EdgeInsets.all(24),
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(16),
-      ),
       child: Column(
         children: [
-          const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.error),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.error.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(Icons.error_outline_rounded, size: 40, color: AppColors.error),
+          ),
           const SizedBox(height: 16),
           Text("No Building Group Found", style: AppTypography.headlineMd),
           const SizedBox(height: 8),
@@ -204,9 +204,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
-          ElevatedButton(
+          ModernButton(
+            label: "Retry Loading",
             onPressed: () => context.read<GroupProvider>().loadGroup(),
-            child: const Text("Retry Loading"),
           ),
         ],
       ),
@@ -214,56 +214,50 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildInviteCard(String code) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primary.withOpacity(0.2)),
-        gradient: LinearGradient(
-          colors: [AppColors.primary.withOpacity(0.05), Colors.white],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
+    return GlassCard(
+      padding: const EdgeInsets.all(24),
       child: Column(
         children: [
           Row(
             children: [
-               const Icon(Icons.qr_code_2_rounded, color: AppColors.primary, size: 24),
-               const SizedBox(width: 12),
-               Text("Building QR Code", style: AppTypography.headlineMd),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.qr_code_2_rounded, color: AppColors.primary, size: 24),
+              ),
+              const SizedBox(width: 12),
+              Text("Building QR Code", style: AppTypography.headlineMd),
             ],
           ),
-          const SizedBox(height: 16),
-          Center(
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.outlineVariant),
-              ),
-              child: QrImageView(
-                data: code,
-                version: QrVersions.auto,
-                size: 200.0,
-                foregroundColor: AppColors.primary,
-              ),
+          const SizedBox(height: 20),
+          GlassContainer(
+            padding: const EdgeInsets.all(16),
+            child: QrImageView(
+              data: code,
+              version: QrVersions.auto,
+              size: 200.0,
+              foregroundColor: AppColors.primary,
             ),
           ),
           const SizedBox(height: 16),
           Text("Invite Code", style: AppTypography.labelBold.copyWith(color: AppColors.onSurfaceVariant)),
           const SizedBox(height: 4),
-          Text(code, style: AppTypography.headlineMd.copyWith(letterSpacing: 4, color: AppColors.primary)),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => _shareInviteLink(code),
-              icon: const Icon(Icons.share_rounded, size: 18),
-              label: const Text("Share Invitation"),
+          Text(
+            code,
+            style: AppTypography.headlineMd.copyWith(
+              letterSpacing: 4,
+              color: AppColors.primary,
+              fontWeight: FontWeight.w700,
             ),
+          ),
+          const SizedBox(height: 20),
+          ModernButton(
+            label: "Share Invitation",
+            icon: Icons.share_rounded,
+            onPressed: () => _shareInviteLink(code),
           ),
         ],
       ),

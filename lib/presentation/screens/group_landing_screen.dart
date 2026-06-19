@@ -6,6 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/member.dart';
 import '../providers/group_provider.dart';
+import '../widgets/modern_components.dart';
 import 'main_screen.dart';
 
 class GroupLandingScreen extends StatefulWidget {
@@ -47,8 +48,8 @@ class _GroupLandingScreenState extends State<GroupLandingScreen> {
     if (connectivityResult.contains(ConnectivityResult.none)) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Internet connection is required to create or join a group.'),
+          SnackBar(
+            content: const Text('Internet connection is required to create or join a group.'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -60,103 +61,112 @@ class _GroupLandingScreenState extends State<GroupLandingScreen> {
 
   void _showCreateGroupDialog() async {
     if (!await _checkConnection()) return;
-
     if (!mounted) return;
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Create Building Group"),
-        content: TextField(
-          controller: _groupNameController,
-          decoration: const InputDecoration(
-            labelText: "Building Name",
-            hintText: "e.g. Sunset Heights",
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final name = _groupNameController.text.trim();
-              if (name.isNotEmpty) {
-                await context.read<GroupProvider>().createGroup(name);
-                if (mounted) {
-                  Navigator.pop(context);
-                  _navigateToMain();
-                }
-              }
-            },
-            child: const Text("Create"),
-          ),
-        ],
+
+    ModernDialog.show(
+      context,
+      title: "Create Building Group",
+      icon: Icons.home_work_rounded,
+      content: ModernInputField(
+        controller: _groupNameController,
+        label: "Building Name",
+        hintText: "e.g. Sunset Heights",
       ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          style: TextButton.styleFrom(foregroundColor: AppColors.onSurfaceVariant),
+          child: const Text("Cancel"),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            final name = _groupNameController.text.trim();
+            if (name.isNotEmpty) {
+              await context.read<GroupProvider>().createGroup(name);
+              if (mounted) {
+                Navigator.pop(context);
+                _navigateToMain();
+              }
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          child: const Text("Create"),
+        ),
+      ],
     );
   }
 
   void _showJoinByCodeDialog() async {
     if (!await _checkConnection()) return;
-
     if (!mounted) return;
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Join by Invite Code"),
-        content: TextField(
-          controller: _inviteCodeController,
-          decoration: const InputDecoration(
-            labelText: "Invite Code",
-            hintText: "6-character code",
-          ),
+
+    ModernDialog.show(
+      context,
+      title: "Join by Invite Code",
+      icon: Icons.link_rounded,
+      content: ModernInputField(
+        controller: _inviteCodeController,
+        label: "Invite Code",
+        hintText: "6-character code",
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          style: TextButton.styleFrom(foregroundColor: AppColors.onSurfaceVariant),
+          child: const Text("Cancel"),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final code = _inviteCodeController.text.trim().toUpperCase();
-              if (code.isNotEmpty) {
-                // Joining via code/QR grants 'member' (viewer) role
-                final success = await context.read<GroupProvider>().joinGroupByCode(code, role: MemberRole.member);
-                if (mounted) {
-                  if (success) {
-                    Navigator.pop(context);
-                    _navigateToMain();
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Invalid invite code')),
-                    );
-                  }
+        ElevatedButton(
+          onPressed: () async {
+            final code = _inviteCodeController.text.trim().toUpperCase();
+            if (code.isNotEmpty) {
+              final success = await context.read<GroupProvider>().joinGroupByCode(code, role: MemberRole.member);
+              if (mounted) {
+                if (success) {
+                  Navigator.pop(context);
+                  _navigateToMain();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Invalid invite code')),
+                  );
                 }
               }
-            },
-            child: const Text("Join"),
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
-        ],
-      ),
+          child: const Text("Join"),
+        ),
+      ],
     );
   }
 
   void _showQRScanner() async {
     if (!await _checkConnection()) return;
-    
     if (!mounted) return;
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => SizedBox(
-        height: MediaQuery.of(context).size.height * 0.7,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text("Scan Invite QR", style: AppTypography.headlineMd),
-            ),
-            Expanded(
+
+    ModernBottomSheet.show(
+      context,
+      maxHeight: 0.8,
+      child: Column(
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.qr_code_scanner_rounded, color: AppColors.primary, size: 24),
+              const SizedBox(width: 12),
+              Text("Scan Invite QR", style: AppTypography.headlineMd),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
               child: MobileScanner(
                 onDetect: (capture) {
                   final List<Barcode> barcodes = capture.barcodes;
@@ -170,23 +180,21 @@ class _GroupLandingScreenState extends State<GroupLandingScreen> {
                 },
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("Cancel"),
-              ),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 16),
+          ModernButton(
+            label: "Cancel",
+            isPrimary: false,
+            onPressed: () => Navigator.pop(context),
+          ),
+          const SizedBox(height: 8),
+        ],
       ),
     );
   }
 
   void _handleQRResult(String code) async {
-    // Basic logic: if it's 6 chars, treat as invite code
     if (code.length == 6) {
-      // Joining via QR grants 'member' (viewer) role
       final success = await context.read<GroupProvider>().joinGroupByCode(code, role: MemberRole.member);
       if (mounted) {
         if (success) {
@@ -216,8 +224,15 @@ class _GroupLandingScreenState extends State<GroupLandingScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Icon(Icons.home_work_outlined, size: 80, color: AppColors.primary),
-              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: const Icon(Icons.home_work_outlined, size: 64, color: AppColors.primary),
+              ),
+              const SizedBox(height: 32),
               Text(
                 "Welcome to DAS Management",
                 style: AppTypography.headlineLg,
@@ -230,41 +245,38 @@ class _GroupLandingScreenState extends State<GroupLandingScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 48),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _showCreateGroupDialog,
-                  child: const Text("Create New Group"),
-                ),
+              ModernButton(
+                label: "Create New Group",
+                icon: Icons.add_circle_outline,
+                onPressed: _showCreateGroupDialog,
               ),
               const SizedBox(height: 16),
-              const Row(
+              Row(
                 children: [
-                  Expanded(child: Divider()),
+                  const Expanded(child: Divider()),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text("OR"),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      "OR",
+                      style: AppTypography.labelBold.copyWith(color: AppColors.onSurfaceVariant),
+                    ),
                   ),
-                  Expanded(child: Divider()),
+                  const Expanded(child: Divider()),
                 ],
               ),
               const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: _showJoinByCodeDialog,
-                  icon: const Icon(Icons.link_rounded),
-                  label: const Text("Join with Invite Code"),
-                ),
+              ModernButton(
+                label: "Join with Invite Code",
+                icon: Icons.link_rounded,
+                isPrimary: false,
+                onPressed: _showJoinByCodeDialog,
               ),
               const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: _showQRScanner,
-                  icon: const Icon(Icons.qr_code_scanner_rounded),
-                  label: const Text("Scan Invitation QR"),
-                ),
+              ModernButton(
+                label: "Scan Invitation QR",
+                icon: Icons.qr_code_scanner_rounded,
+                isPrimary: false,
+                onPressed: _showQRScanner,
               ),
             ],
           ),

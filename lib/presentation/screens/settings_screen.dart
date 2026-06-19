@@ -7,6 +7,7 @@ import '../../core/theme/app_typography.dart';
 import '../../domain/entities/member.dart';
 import '../providers/dashboard_provider.dart';
 import '../providers/sync_provider.dart';
+import '../widgets/modern_components.dart';
 import 'login_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -61,7 +62,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ? const SizedBox(
                           width: 24, height: 24,
                           child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Icon(Icons.chevron_right_rounded, color: AppColors.outline),
+                      : Icon(Icons.chevron_right_rounded, color: AppColors.outlineVariant, size: 20),
                 ),
                 onTap: () => context.read<SyncProvider>().syncNow(),
               ),
@@ -102,10 +103,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   icon: Icons.people_outline_rounded,
                   title: "Manage Members",
                   subtitle: "${memberProvider.allMembers.length} residents registered",
-                  onTap: () {
-                    // Navigate to a dedicated member management screen if needed
-                    // For now, we keep it simple
-                  },
+                  onTap: () {},
                 ),
                 _buildSettingItem(
                   icon: Icons.account_balance_wallet_outlined,
@@ -145,10 +143,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onPressed: () => _showLogoutDialog(context),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.error,
-                  side: const BorderSide(color: AppColors.error),
+                  side: BorderSide(color: AppColors.error.withValues(alpha: 0.3)),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                 ),
                 child: const Text("Log Out"),
@@ -162,20 +160,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildProfileSection(dynamic user) {
-    return Container(
+    return GlassCard(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        border: Border.all(color: AppColors.outlineVariant.withOpacity(0.5)),
-      ),
       child: Row(
         children: [
           CircleAvatar(
@@ -187,7 +173,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     : NetworkImage(user.imageUrl))
                 : null,
             child: user?.imageUrl == null
-                ? const Icon(Icons.person, size: 32, color: AppColors.outline)
+                ? Icon(Icons.person, size: 32, color: AppColors.outline)
                 : null,
           ),
           const SizedBox(width: 16),
@@ -206,14 +192,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
-          IconButton(
-            onPressed: () => _showEditProfileSheet(context, user),
-            icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              onPressed: () => _showEditProfileSheet(context, user),
+              icon: const Icon(Icons.edit_outlined, color: AppColors.primary, size: 20),
+            ),
           ),
         ],
       ),
     );
   }
+
   Widget _buildSectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8),
@@ -228,19 +221,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildSettingsCard(List<Widget> children) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.outlineVariant.withOpacity(0.5)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return GlassCard(
+      padding: EdgeInsets.zero,
       child: Column(
         children: children.asMap().entries.map((entry) {
           int idx = entry.key;
@@ -272,10 +254,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }) {
     return ListTile(
       onTap: onTap,
-      leading: Icon(icon, color: AppColors.onSurfaceVariant),
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(icon, color: AppColors.primary, size: 20),
+      ),
       title: Text(title, style: AppTypography.bodyLg.copyWith(fontWeight: FontWeight.w500)),
       subtitle: subtitle != null ? Text(subtitle, style: AppTypography.bodySm) : null,
-      trailing: trailing ?? (onTap != null ? const Icon(Icons.chevron_right_rounded, color: AppColors.outline) : null),
+      trailing: trailing ?? (onTap != null ? Icon(Icons.chevron_right_rounded, color: AppColors.outlineVariant, size: 20) : null),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     );
@@ -320,7 +309,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           iconColor = AppColors.onSurfaceVariant;
         }
         return ListTile(
-          leading: Icon(icon, color: iconColor),
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
           title: Text('Cloud Status', style: AppTypography.bodyLg.copyWith(fontWeight: FontWeight.w500)),
           subtitle: Text(subtitle, style: AppTypography.bodySm),
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -334,206 +330,221 @@ class _SettingsScreenState extends State<SettingsScreen> {
     String? imageUrl = user?.imageUrl;
     File? pickedImage;
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setSheetState) => Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(ctx).viewInsets.bottom,
-            left: 20,
-            right: 20,
-            top: 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Edit Profile", style: AppTypography.headlineMd),
-              const SizedBox(height: 20),
-              Center(
-                child: GestureDetector(
-                  onTap: () async {
-                    final urlController = TextEditingController();
-                    final choice = await showDialog<String>(
-                      context: ctx,
-                      builder: (dialogCtx) => AlertDialog(
-                        title: const Text("Change Photo"),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ListTile(
-                              leading: const Icon(Icons.photo_library),
-                              title: const Text("Gallery"),
-                              onTap: () => Navigator.pop(dialogCtx, 'gallery'),
-                            ),
-                            ListTile(
-                              leading: const Icon(Icons.camera_alt),
-                              title: const Text("Camera"),
-                              onTap: () => Navigator.pop(dialogCtx, 'camera'),
-                            ),
-                            const Divider(),
-                            TextField(
-                              controller: urlController,
-                              decoration: const InputDecoration(
-                                labelText: 'Enter image URL',
-                                hintText: 'https://example.com/photo.jpg',
-                                prefixIcon: Icon(Icons.link),
-                              ),
+    ModernBottomSheet.show(
+      context,
+      child: StatefulBuilder(
+        builder: (ctx, setSheetState) => Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Edit Profile", style: AppTypography.headlineMd),
+            const SizedBox(height: 20),
+            Center(
+              child: GestureDetector(
+                onTap: () async {
+                  final urlController = TextEditingController();
+                  await ModernDialog.show(
+                    ctx,
+                    title: "Change Photo",
+                    icon: Icons.camera_alt,
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _photoOption(ctx, setSheetState, Icons.photo_library, "Gallery", () async {
+                          final picker = ImagePicker();
+                          final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+                          if (picked != null) {
+                            setSheetState(() {
+                              pickedImage = File(picked.path);
+                              imageUrl = null;
+                            });
+                          }
+                        }),
+                        const SizedBox(height: 8),
+                        _photoOption(ctx, setSheetState, Icons.camera_alt, "Camera", () async {
+                          final picker = ImagePicker();
+                          final picked = await picker.pickImage(source: ImageSource.camera, imageQuality: 80);
+                          if (picked != null) {
+                            setSheetState(() {
+                              pickedImage = File(picked.path);
+                              imageUrl = null;
+                            });
+                          }
+                        }),
+                        const SizedBox(height: 16),
+                        ModernInputField(
+                          controller: urlController,
+                          label: 'Enter image URL',
+                          hintText: 'https://example.com/photo.jpg',
+                          prefixIcon: const Icon(Icons.link),
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        style: TextButton.styleFrom(foregroundColor: AppColors.onSurfaceVariant),
+                        child: const Text("Cancel"),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          final url = urlController.text.trim();
+                          if (url.isNotEmpty) {
+                            setSheetState(() {
+                              imageUrl = url;
+                              pickedImage = null;
+                            });
+                            Navigator.pop(ctx);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text("Use URL"),
+                      ),
+                    ],
+                  );
+                },
+                child: Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 48,
+                      backgroundColor: AppColors.surfaceContainer,
+                      backgroundImage: pickedImage != null
+                          ? FileImage(pickedImage!)
+                          : (imageUrl != null ? NetworkImage(imageUrl!) : null),
+                      child: pickedImage == null && imageUrl == null
+                          ? Icon(Icons.person, size: 48, color: AppColors.outline)
+                          : null,
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [AppColors.primaryContainer, AppColors.primary],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.3),
+                              blurRadius: 6,
                             ),
                           ],
                         ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(dialogCtx),
-                            child: const Text("Cancel"),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              final url = urlController.text.trim();
-                              if (url.isNotEmpty) {
-                                Navigator.pop(dialogCtx, 'url:$url');
-                              }
-                            },
-                            child: const Text("Use URL"),
-                          ),
-                        ],
+                        child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
                       ),
-                    );
-                    if (choice == null) return;
-                    if (choice == 'gallery' || choice == 'camera') {
-                      final source = choice == 'gallery'
-                          ? ImageSource.gallery
-                          : ImageSource.camera;
-                      final picker = ImagePicker();
-                      final picked = await picker.pickImage(source: source, imageQuality: 80);
-                      if (picked != null) {
-                        setSheetState(() {
-                          pickedImage = File(picked.path);
-                          imageUrl = null;
-                        });
-                      }
-                    } else if (choice.startsWith('url:')) {
-                      final url = choice.substring(4);
-                      setSheetState(() {
-                        imageUrl = url;
-                        pickedImage = null;
-                      });
-                    }
-                  },
-                  child: Stack(
-                    children: [
-                      CircleAvatar(
-                        radius: 48,
-                        backgroundColor: AppColors.surfaceContainer,
-                        backgroundImage: pickedImage != null
-                            ? FileImage(pickedImage!)
-                            : (imageUrl != null ? NetworkImage(imageUrl!) : null),
-                        child: pickedImage == null && imageUrl == null
-                            ? const Icon(Icons.person, size: 48, color: AppColors.outline)
-                            : null,
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: const BoxDecoration(
-                            color: AppColors.primary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.camera_alt, size: 18, color: Colors.white),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Display Name',
-                  hintText: 'Enter your name',
-                ),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    final name = nameController.text.trim();
-                    if (name.isEmpty || user == null) return;
-
-                    String? finalImageUrl = imageUrl;
-                    if (pickedImage != null) {
-                      // In a real app, upload to a server and get URL back.
-                      // For now, keep the picked image reference locally.
-                      finalImageUrl = pickedImage!.path;
-                    }
-
-                    final updated = Member(
-                      id: user.id,
-                      name: name,
-                      unit: user.unit,
-                      balance: user.balance,
-                      status: user.status,
-                      role: user.role,
-                      imageUrl: finalImageUrl ?? '',
-                      phoneNumber: user.phoneNumber,
-                      groupId: user.groupId,
-                    );
-                    if (!ctx.mounted) return;
-                    await context.read<DashboardProvider>().updateMember(updated);
-                    if (!ctx.mounted) return;
-                    Navigator.pop(ctx);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
                     ),
-                  ),
-                  child: const Text("Save"),
+                  ],
                 ),
               ),
-              const SizedBox(height: 20),
-            ],
-          ),
+            ),
+            const SizedBox(height: 24),
+            ModernInputField(
+              controller: nameController,
+              label: 'Display Name',
+              hintText: 'Enter your name',
+            ),
+            const SizedBox(height: 24),
+            ModernButton(
+              label: "Save",
+              onPressed: () async {
+                final name = nameController.text.trim();
+                if (name.isEmpty || user == null) return;
+
+                String? finalImageUrl = imageUrl;
+                if (pickedImage != null) {
+                  finalImageUrl = pickedImage!.path;
+                }
+
+                final updated = Member(
+                  id: user.id,
+                  name: name,
+                  unit: user.unit,
+                  balance: user.balance,
+                  status: user.status,
+                  role: user.role,
+                  imageUrl: finalImageUrl ?? '',
+                  phoneNumber: user.phoneNumber,
+                  groupId: user.groupId,
+                );
+                if (!ctx.mounted) return;
+                await context.read<DashboardProvider>().updateMember(updated);
+                if (!ctx.mounted) return;
+                Navigator.pop(ctx);
+              },
+            ),
+            const SizedBox(height: 12),
+          ],
         ),
       ),
     );
   }
 
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Log Out"),
-        content: const Text("Are you sure you want to log out of DAS Management?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
+  Widget _photoOption(BuildContext ctx, StateSetter setSheetState, IconData icon, String label, VoidCallback onTap) {
+    return GlassCard(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      onTap: () async {
+        Navigator.pop(ctx);
+        await Future.delayed(const Duration(milliseconds: 100));
+        onTap();
+      },
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: AppColors.primary, size: 20),
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
-                (route) => false,
-              );
-            },
-            child: const Text("Log Out", style: TextStyle(color: AppColors.error)),
-          ),
+          const SizedBox(width: 12),
+          Text(label, style: AppTypography.bodyLg.copyWith(fontWeight: FontWeight.w500)),
         ],
       ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    ModernDialog.show(
+      context,
+      title: "Log Out",
+      icon: Icons.logout_rounded,
+      content: Text(
+        "Are you sure you want to log out of DAS Management?",
+        style: AppTypography.bodyLg.copyWith(color: AppColors.onSurfaceVariant),
+        textAlign: TextAlign.center,
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          style: TextButton.styleFrom(foregroundColor: AppColors.onSurfaceVariant),
+          child: const Text("Cancel"),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context);
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginScreen()),
+              (route) => false,
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.error,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          child: const Text("Log Out"),
+        ),
+      ],
     );
   }
 }
