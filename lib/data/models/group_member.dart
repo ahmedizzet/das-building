@@ -1,9 +1,9 @@
 import 'package:isar/isar.dart';
 
-part 'member.g.dart';
+part 'group_member.g.dart';
 
 @collection
-class Member {
+class GroupMember {
   Id id = Isar.autoIncrement;
 
   @Index(unique: true, replace: true)
@@ -12,22 +12,15 @@ class Member {
   @Index()
   late String tenantId;
 
-  late String name;
-  late String unit;
-  late double balance;
-  late int status; // 0: Paid, 1: Unpaid, 2: Late
-  late int role; // 0: Admin, 1: Member, 2: Viewer
-  late String imageUrl;
-
   @Index()
-  late String phoneNumber;
+  late String memberId; // Reference to Member.serverId
 
-  @Index()
-  String? groupId;
+  late double monthlyFee;
 
   @Index()
   late DateTime updatedAt;
   @Index()
   late bool isSynced;
+  @Index()
   late bool isDeleted;
 }

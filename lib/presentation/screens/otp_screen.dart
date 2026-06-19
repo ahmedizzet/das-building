@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-import 'main_screen.dart';
+import 'group_landing_screen.dart';
 
 class OtpScreen extends StatefulWidget {
   final String phoneNumber;
@@ -24,6 +24,12 @@ class _OtpScreenState extends State<OtpScreen> {
       node.dispose();
     }
     super.dispose();
+  }
+
+  void _resendCode() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('OTP resent successfully')),
+    );
   }
 
   @override
@@ -67,7 +73,7 @@ class _OtpScreenState extends State<OtpScreen> {
               const SizedBox(height: 32),
               Center(
                 child: TextButton(
-                  onPressed: () {},
+                  onPressed: _resendCode,
                   child: Text(
                     "Resend Code",
                     style: AppTypography.labelBold.copyWith(color: AppColors.primary),
@@ -81,7 +87,9 @@ class _OtpScreenState extends State<OtpScreen> {
                   onPressed: () {
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (context) => const MainScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => GroupLandingScreen(phoneNumber: widget.phoneNumber),
+                      ),
                       (route) => false,
                     );
                   },

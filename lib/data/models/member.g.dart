@@ -22,53 +22,63 @@ const MemberSchema = CollectionSchema(
       name: r'balance',
       type: IsarType.double,
     ),
-    r'imageUrl': PropertySchema(
+    r'groupId': PropertySchema(
       id: 1,
+      name: r'groupId',
+      type: IsarType.string,
+    ),
+    r'imageUrl': PropertySchema(
+      id: 2,
       name: r'imageUrl',
       type: IsarType.string,
     ),
     r'isDeleted': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'isDeleted',
       type: IsarType.bool,
     ),
     r'isSynced': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'isSynced',
       type: IsarType.bool,
     ),
     r'name': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'name',
       type: IsarType.string,
     ),
     r'phoneNumber': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'phoneNumber',
       type: IsarType.string,
     ),
+    r'role': PropertySchema(
+      id: 7,
+      name: r'role',
+      type: IsarType.long,
+    ),
     r'serverId': PropertySchema(
-      id: 6,
+      id: 8,
       name: r'serverId',
       type: IsarType.string,
     ),
     r'status': PropertySchema(
-      id: 7,
+      id: 9,
       name: r'status',
       type: IsarType.long,
     ),
     r'tenantId': PropertySchema(
-      id: 8,
+      id: 10,
       name: r'tenantId',
       type: IsarType.string,
     ),
     r'unit': PropertySchema(
-      id: 9,
+      id: 11,
       name: r'unit',
       type: IsarType.string,
     ),
     r'updatedAt': PropertySchema(
-      id: 10,
+      id: 12,
       name: r'updatedAt',
       type: IsarType.dateTime,
     )
@@ -118,6 +128,19 @@ const MemberSchema = CollectionSchema(
         )
       ],
     ),
+    r'groupId': IndexSchema(
+      id: -8523216633229774932,
+      name: r'groupId',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'groupId',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    ),
     r'updatedAt': IndexSchema(
       id: -6238191080293565125,
       name: r'updatedAt',
@@ -159,6 +182,12 @@ int _memberEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
+  {
+    final value = object.groupId;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   bytesCount += 3 + object.imageUrl.length * 3;
   bytesCount += 3 + object.name.length * 3;
   bytesCount += 3 + object.phoneNumber.length * 3;
@@ -175,16 +204,18 @@ void _memberSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeDouble(offsets[0], object.balance);
-  writer.writeString(offsets[1], object.imageUrl);
-  writer.writeBool(offsets[2], object.isDeleted);
-  writer.writeBool(offsets[3], object.isSynced);
-  writer.writeString(offsets[4], object.name);
-  writer.writeString(offsets[5], object.phoneNumber);
-  writer.writeString(offsets[6], object.serverId);
-  writer.writeLong(offsets[7], object.status);
-  writer.writeString(offsets[8], object.tenantId);
-  writer.writeString(offsets[9], object.unit);
-  writer.writeDateTime(offsets[10], object.updatedAt);
+  writer.writeString(offsets[1], object.groupId);
+  writer.writeString(offsets[2], object.imageUrl);
+  writer.writeBool(offsets[3], object.isDeleted);
+  writer.writeBool(offsets[4], object.isSynced);
+  writer.writeString(offsets[5], object.name);
+  writer.writeString(offsets[6], object.phoneNumber);
+  writer.writeLong(offsets[7], object.role);
+  writer.writeString(offsets[8], object.serverId);
+  writer.writeLong(offsets[9], object.status);
+  writer.writeString(offsets[10], object.tenantId);
+  writer.writeString(offsets[11], object.unit);
+  writer.writeDateTime(offsets[12], object.updatedAt);
 }
 
 Member _memberDeserialize(
@@ -195,17 +226,19 @@ Member _memberDeserialize(
 ) {
   final object = Member();
   object.balance = reader.readDouble(offsets[0]);
+  object.groupId = reader.readStringOrNull(offsets[1]);
   object.id = id;
-  object.imageUrl = reader.readString(offsets[1]);
-  object.isDeleted = reader.readBool(offsets[2]);
-  object.isSynced = reader.readBool(offsets[3]);
-  object.name = reader.readString(offsets[4]);
-  object.phoneNumber = reader.readString(offsets[5]);
-  object.serverId = reader.readString(offsets[6]);
-  object.status = reader.readLong(offsets[7]);
-  object.tenantId = reader.readString(offsets[8]);
-  object.unit = reader.readString(offsets[9]);
-  object.updatedAt = reader.readDateTime(offsets[10]);
+  object.imageUrl = reader.readString(offsets[2]);
+  object.isDeleted = reader.readBool(offsets[3]);
+  object.isSynced = reader.readBool(offsets[4]);
+  object.name = reader.readString(offsets[5]);
+  object.phoneNumber = reader.readString(offsets[6]);
+  object.role = reader.readLong(offsets[7]);
+  object.serverId = reader.readString(offsets[8]);
+  object.status = reader.readLong(offsets[9]);
+  object.tenantId = reader.readString(offsets[10]);
+  object.unit = reader.readString(offsets[11]);
+  object.updatedAt = reader.readDateTime(offsets[12]);
   return object;
 }
 
@@ -219,13 +252,13 @@ P _memberDeserializeProp<P>(
     case 0:
       return (reader.readDouble(offset)) as P;
     case 1:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 2:
-      return (reader.readBool(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 3:
       return (reader.readBool(offset)) as P;
     case 4:
-      return (reader.readString(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 5:
       return (reader.readString(offset)) as P;
     case 6:
@@ -235,8 +268,12 @@ P _memberDeserializeProp<P>(
     case 8:
       return (reader.readString(offset)) as P;
     case 9:
-      return (reader.readString(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 10:
+      return (reader.readString(offset)) as P;
+    case 11:
+      return (reader.readString(offset)) as P;
+    case 12:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -534,6 +571,71 @@ extension MemberQueryWhere on QueryBuilder<Member, Member, QWhereClause> {
     });
   }
 
+  QueryBuilder<Member, Member, QAfterWhereClause> groupIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'groupId',
+        value: [null],
+      ));
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterWhereClause> groupIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'groupId',
+        lower: [null],
+        includeLower: false,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterWhereClause> groupIdEqualTo(
+      String? groupId) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'groupId',
+        value: [groupId],
+      ));
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterWhereClause> groupIdNotEqualTo(
+      String? groupId) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'groupId',
+              lower: [],
+              upper: [groupId],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'groupId',
+              lower: [groupId],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'groupId',
+              lower: [groupId],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'groupId',
+              lower: [],
+              upper: [groupId],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
   QueryBuilder<Member, Member, QAfterWhereClause> updatedAtEqualTo(
       DateTime updatedAt) {
     return QueryBuilder.apply(this, (query) {
@@ -729,6 +831,152 @@ extension MemberQueryFilter on QueryBuilder<Member, Member, QFilterCondition> {
         upper: upper,
         includeUpper: includeUpper,
         epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterFilterCondition> groupIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'groupId',
+      ));
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterFilterCondition> groupIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'groupId',
+      ));
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterFilterCondition> groupIdEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'groupId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterFilterCondition> groupIdGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'groupId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterFilterCondition> groupIdLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'groupId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterFilterCondition> groupIdBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'groupId',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterFilterCondition> groupIdStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'groupId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterFilterCondition> groupIdEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'groupId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterFilterCondition> groupIdContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'groupId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterFilterCondition> groupIdMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'groupId',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterFilterCondition> groupIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'groupId',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterFilterCondition> groupIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'groupId',
+        value: '',
       ));
     });
   }
@@ -1190,6 +1438,58 @@ extension MemberQueryFilter on QueryBuilder<Member, Member, QFilterCondition> {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'phoneNumber',
         value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterFilterCondition> roleEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'role',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterFilterCondition> roleGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'role',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterFilterCondition> roleLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'role',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterFilterCondition> roleBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'role',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
       ));
     });
   }
@@ -1706,6 +2006,18 @@ extension MemberQuerySortBy on QueryBuilder<Member, Member, QSortBy> {
     });
   }
 
+  QueryBuilder<Member, Member, QAfterSortBy> sortByGroupId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'groupId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterSortBy> sortByGroupIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'groupId', Sort.desc);
+    });
+  }
+
   QueryBuilder<Member, Member, QAfterSortBy> sortByImageUrl() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'imageUrl', Sort.asc);
@@ -1763,6 +2075,18 @@ extension MemberQuerySortBy on QueryBuilder<Member, Member, QSortBy> {
   QueryBuilder<Member, Member, QAfterSortBy> sortByPhoneNumberDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'phoneNumber', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterSortBy> sortByRole() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'role', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterSortBy> sortByRoleDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'role', Sort.desc);
     });
   }
 
@@ -1840,6 +2164,18 @@ extension MemberQuerySortThenBy on QueryBuilder<Member, Member, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Member, Member, QAfterSortBy> thenByGroupId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'groupId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterSortBy> thenByGroupIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'groupId', Sort.desc);
+    });
+  }
+
   QueryBuilder<Member, Member, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -1912,6 +2248,18 @@ extension MemberQuerySortThenBy on QueryBuilder<Member, Member, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Member, Member, QAfterSortBy> thenByRole() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'role', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterSortBy> thenByRoleDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'role', Sort.desc);
+    });
+  }
+
   QueryBuilder<Member, Member, QAfterSortBy> thenByServerId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'serverId', Sort.asc);
@@ -1980,6 +2328,13 @@ extension MemberQueryWhereDistinct on QueryBuilder<Member, Member, QDistinct> {
     });
   }
 
+  QueryBuilder<Member, Member, QDistinct> distinctByGroupId(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'groupId', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<Member, Member, QDistinct> distinctByImageUrl(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -2010,6 +2365,12 @@ extension MemberQueryWhereDistinct on QueryBuilder<Member, Member, QDistinct> {
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'phoneNumber', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Member, Member, QDistinct> distinctByRole() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'role');
     });
   }
 
@@ -2060,6 +2421,12 @@ extension MemberQueryProperty on QueryBuilder<Member, Member, QQueryProperty> {
     });
   }
 
+  QueryBuilder<Member, String?, QQueryOperations> groupIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'groupId');
+    });
+  }
+
   QueryBuilder<Member, String, QQueryOperations> imageUrlProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'imageUrl');
@@ -2087,6 +2454,12 @@ extension MemberQueryProperty on QueryBuilder<Member, Member, QQueryProperty> {
   QueryBuilder<Member, String, QQueryOperations> phoneNumberProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'phoneNumber');
+    });
+  }
+
+  QueryBuilder<Member, int, QQueryOperations> roleProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'role');
     });
   }
 

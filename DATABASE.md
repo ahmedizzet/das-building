@@ -65,6 +65,14 @@ Stores community-led or official social gatherings.
 - `DateTime time`: When the event takes place.
 - `String imageUrl`: Promotional image URL.
 
+### 8. GroupMember
+Stores residents specifically added to the building group for billing and management.
+- `Id id`: Isar auto-increment ID.
+- `String serverId`: Unique identifier for sync.
+- `String memberId`: Reference to the core Member record.
+- `double monthlyFee`: Amount assigned for recurring payments.
+- `DateTime updatedAt`: Track changes for sync.
+
 ## Enums Mapping
 
 ### TicketStatus

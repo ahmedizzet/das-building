@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../providers/member_provider.dart';
+import '../providers/group_provider.dart';
 import 'dashboard_screen.dart';
 import 'chat_screen.dart';
 import 'tickets_screen.dart';
-import 'booking_screen.dart';
+import 'onboarding.dart';
 import 'members_screen.dart';
+import 'settings_screen.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  final String phoneNumber;
+  const MainScreen({super.key, required this.phoneNumber});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -16,14 +21,31 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
+  bool _initialized = false;
 
-  final List<Widget> _screens = [
-    const DashboardScreen(),
-    const ChatScreen(),
-    const TicketsScreen(),
-    const BookingScreen(),
-    const MembersScreen(),
-  ];
+  List<Widget> _getScreens(bool isAdmin) {
+    return [
+      const DashboardScreen(),
+      const MembersScreen(),
+      const ChatScreen(),
+      const TicketsScreen(),
+      if (isAdmin) const OnboardingScreen(),
+    ];
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await context.read<MemberProvider>().loadCurrentUser(widget.phoneNumber);
+        if (mounted) {
+          await context.read<GroupProvider>().loadGroup();
+        }
+      });
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -31,21 +53,74 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
+  void _openSettings() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SettingsScreen()),
+    );
+  }
+
+  void _showProfile() {
+    final user = context.read<MemberProvider>().currentUser;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("My Profile"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Name: ${user?.name ?? 'Resident'}", style: AppTypography.bodyLg),
+            const SizedBox(height: 8),
+            if (user?.unit != null && user!.unit.isNotEmpty)
+              Text("Unit: ${user.unit}", style: AppTypography.bodyLg),
+            const SizedBox(height: 8),
+            Text("Phone: ${user?.phoneNumber ?? widget.phoneNumber}", style: AppTypography.bodyLg),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Close"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _openSettings();
+            },
+            child: const Text("Edit in Settings"),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final group = context.watch<GroupProvider>().currentGroup;
     return Scaffold(
       appBar: AppBar(
-        leading: const Padding(
-          padding: EdgeInsets.only(left: 16.0),
-          child: CircleAvatar(
-            backgroundColor: AppColors.surfaceDim,
-            child: Icon(Icons.person, color: AppColors.onSurface),
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16.0),
+          child: GestureDetector(
+            onTap: _showProfile,
+            child: const CircleAvatar(
+              backgroundColor: AppColors.surfaceDim,
+              child: Icon(Icons.person, color: AppColors.onSurface),
+            ),
           ),
         ),
-        title: Text('Civic Hearth', style: AppTypography.headlineMd),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Civic Hearth', style: AppTypography.headlineMd),
+            if (group != null)
+              Text(group.name, style: AppTypography.bodySm.copyWith(color: AppColors.primary, fontWeight: FontWeight.w600)),
+          ],
+        ),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: _openSettings,
             icon: const Icon(Icons.settings_outlined),
           ),
           const SizedBox(width: 8),
@@ -53,40 +128,46 @@ class _MainScreenState extends State<MainScreen> {
       ),
       body: IndexedStack(
         index: _selectedIndex,
-        children: _screens,
+        children: _getScreens(context.watch<MemberProvider>().isAdmin),
       ),
       bottomNavigationBar: Container(
-        height: 84, // Increased to accommodate safe area and padding
+        height: 84,
         decoration: const BoxDecoration(
           border: Border(
             top: BorderSide(color: AppColors.outlineVariant, width: 1),
           ),
         ),
-        child: BottomNavigationBar(
-          currentIndex: _selectedIndex,
-          onTap: _onItemTapped,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.grid_view_rounded),
-              label: 'Dashboard',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.chat_bubble_outline_rounded),
-              label: 'Chat',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.confirmation_number_outlined),
-              label: 'Tickets',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_today_rounded),
-              label: 'Booking',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.people_outline_rounded),
-              label: 'Members',
-            ),
-          ],
+        child: Consumer<MemberProvider>(
+          builder: (context, memberProvider, child) {
+            final isAdmin = memberProvider.isAdmin;
+            return BottomNavigationBar(
+              currentIndex: _selectedIndex,
+              onTap: _onItemTapped,
+              items: [
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.grid_view_rounded),
+                  label: 'Dashboard',
+                ),
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.people_outline_rounded),
+                  label: 'Members',
+                ),
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.chat_bubble_outline_rounded),
+                  label: 'Chat',
+                ),
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.confirmation_number_outlined),
+                  label: 'Tickets',
+                ),
+                if (isAdmin)
+                  const BottomNavigationBarItem(
+                    icon: Icon(Icons.calendar_today_rounded),
+                    label: 'Onboarding',
+                  ),
+              ],
+            );
+          },
         ),
       ),
     );

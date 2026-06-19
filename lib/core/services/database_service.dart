@@ -6,6 +6,10 @@ import '../../data/models/member.dart';
 import '../../data/models/amenity.dart';
 import '../../data/models/booking.dart';
 import '../../data/models/announcement.dart';
+import '../../data/models/payment.dart';
+import '../../data/models/messages.dart';
+import '../../data/models/group_member.dart';
+import '../../data/models/group.dart';
 
 class DatabaseService {
   late Isar isar;
@@ -20,6 +24,10 @@ class DatabaseService {
         AmenitySchema,
         BookingSchema,
         AnnouncementSchema,
+        PaymentSchema,
+        MessageSchema,
+        GroupMemberSchema,
+        BuildingGroupSchema,
       ],
       directory: dir.path,
     );

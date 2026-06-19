@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../providers/dashboard_provider.dart';
+import '../providers/member_provider.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -25,8 +26,6 @@ class DashboardScreen extends StatelessWidget {
           const FinancialHeroCard(),
           const SizedBox(height: 24),
           const RecentExpensesSection(),
-          const SizedBox(height: 24),
-          const MyPaymentHistorySection(),
         ],
       ),
     );
@@ -98,6 +97,116 @@ class FinancialHeroCard extends StatelessWidget {
 class RecentExpensesSection extends StatelessWidget {
   const RecentExpensesSection({super.key});
 
+  void _showAddExpenseSheet(BuildContext context) {
+    final titleController = TextEditingController();
+    final amountController = TextEditingController();
+    String selectedCategory = 'Maintenance';
+    final provider = Provider.of<DashboardProvider>(context, listen: false);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+          left: 20,
+          right: 20,
+          top: 20,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Add New Expense", style: AppTypography.headlineMd),
+            const SizedBox(height: 16),
+            TextField(
+              controller: titleController,
+              decoration: const InputDecoration(labelText: 'Title', hintText: 'e.g. Roof Repair'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: amountController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Amount', hintText: 'e.g. 1200.00'),
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: selectedCategory,
+              decoration: const InputDecoration(labelText: 'Category'),
+              items: ['Maintenance', 'Lifestyle', 'Operations', 'Utilities']
+                  .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                  .toList(),
+              onChanged: (val) => selectedCategory = val!,
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  if (titleController.text.isNotEmpty && amountController.text.isNotEmpty) {
+                    provider.addExpense(
+                      title: titleController.text,
+                      amount: -double.parse(amountController.text),
+                      category: selectedCategory,
+                      date: DateTime.now(),
+                    );
+                    Navigator.pop(context);
+                  }
+                },
+                child: const Text("Save Expense"),
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showFilterSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Sort Expenses", style: AppTypography.headlineMd),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.date_range),
+              title: const Text("Date (Newest)"),
+              onTap: () { Navigator.pop(context); },
+            ),
+            ListTile(
+              leading: const Icon(Icons.date_range),
+              title: const Text("Date (Oldest)"),
+              onTap: () { Navigator.pop(context); },
+            ),
+            ListTile(
+              leading: const Icon(Icons.attach_money),
+              title: const Text("Amount (Highest)"),
+              onTap: () { Navigator.pop(context); },
+            ),
+            ListTile(
+              leading: const Icon(Icons.attach_money),
+              title: const Text("Amount (Lowest)"),
+              onTap: () { Navigator.pop(context); },
+            ),
+            const SizedBox(height: 12),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<DashboardProvider>(context);
@@ -108,7 +217,19 @@ class RecentExpensesSection extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text("Recent Building Expenses", style: AppTypography.headlineMd),
-            IconButton(onPressed: () {}, icon: const Icon(Icons.tune)),
+            Row(
+              children: [
+                if (context.watch<MemberProvider>().isAdmin)
+                  IconButton(
+                    onPressed: () => _showAddExpenseSheet(context),
+                    icon: const Icon(Icons.add_circle_outline, color: AppColors.primary),
+                  ),
+                IconButton(
+                  onPressed: () => _showFilterSheet(context),
+                  icon: const Icon(Icons.tune),
+                ),
+              ],
+            ),
           ],
         ),
         const SizedBox(height: 12),
@@ -155,12 +276,38 @@ class RecentExpensesSection extends StatelessWidget {
                     const Icon(Icons.chevron_right),
                   ],
                 ),
-                onTap: () {},
+                onTap: () => _showExpenseDetail(context, expense),
               );
             },
           ),
         ),
       ],
+    );
+  }
+
+  void _showExpenseDetail(BuildContext context, dynamic expense) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(expense.title, style: AppTypography.headlineMd),
+            const SizedBox(height: 12),
+            Text("Amount: ${NumberFormat.currency(symbol: '\$').format(expense.amount)}", style: AppTypography.bodyLg),
+            const SizedBox(height: 8),
+            Text("Date: ${DateFormat('MMM dd, yyyy').format(expense.date)}", style: AppTypography.bodyLg),
+            const SizedBox(height: 8),
+            Text("Category: ${expense.category}", style: AppTypography.bodyLg),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
     );
   }
 
@@ -177,67 +324,6 @@ class RecentExpensesSection extends StatelessWidget {
       default:
         return Icons.receipt_long_rounded;
     }
-  }
-}
-
-class MyPaymentHistorySection extends StatelessWidget {
-  const MyPaymentHistorySection({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text("My Payment History", style: AppTypography.headlineMd),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 40,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: const [
-              MonthPill(month: 'Aug', isSelected: false),
-              MonthPill(month: 'Sep', isSelected: false),
-              MonthPill(month: 'Oct', isSelected: true),
-              MonthPill(month: 'Nov', isSelected: false),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceContainerLowest,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.outlineVariant),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Monthly Dues - October", style: AppTypography.bodyLg.copyWith(fontWeight: FontWeight.w600)),
-                  Text("Due on Oct 31, 2023", style: AppTypography.bodySm),
-                ],
-              ),
-              Text("\$350.00", style: AppTypography.bodyLg.copyWith(fontWeight: FontWeight.w700)),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.surfaceContainer,
-              foregroundColor: AppColors.primary,
-            ),
-            child: const Text("Make a Payment"),
-          ),
-        ),
-      ],
-    );
   }
 }
 
