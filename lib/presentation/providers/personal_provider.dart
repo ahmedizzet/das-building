@@ -110,8 +110,22 @@ class PersonalProvider with ChangeNotifier {
     await _paymentRepository.addPayment(newPayment);
   }
 
-  double get buildingBalance => 1245600.00;
-  double get monthlyIncome => 85400.00;
+  double _buildingBalance = 1245600.00;
+
+  double get buildingBalance => _buildingBalance;
+
+  void setBuildingBalance(double value) {
+    _buildingBalance = value;
+    notifyListeners();
+  }
+
+  double get monthlyIncome {
+    final now = DateTime.now();
+    return _allPayments
+        .where((p) => p.date.month == now.month && p.date.year == now.year)
+        .fold(0.0, (sum, p) => sum + p.amount.abs());
+  }
+
   double get monthlyExpenses {
     return expenses.where((e) => e.amount < 0).fold(0, (sum, e) => sum + e.amount.abs());
   }
